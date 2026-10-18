@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f3e8">
+  <script>if(new URLSearchParams(location.search).has('native')){document.documentElement.classList.add('native-surface','desktop-mode');document.documentElement.style.background='transparent';}</script>
+  <title>息屿 · 你的桌面小世界</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="site-header">
+      <a href="./" class="brand" aria-label="息屿首页">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" shape-rendering="crispEdges"><path fill="#ced8a9" d="M4 21h24v4H4zM8 25h16v3H8z"/><path fill="#5e805c" d="M15 8h3v14h-3zM7 8h8v4H7zM10 12h7v4h-7zM18 5h8v5h-8zM17 10h6v4h-6z"/><path fill="#9db881" d="M8 5h5v3H8zM21 3h4v2h-4z"/></svg>
+        <span class="brand-name">息屿<span>LITTLE WORLD</span></span>
+      </a>
+      <p class="header-poem">一方桌面，万物慢慢生长。</p>
+      <nav class="header-actions" aria-label="世界设置">
+        <button id="sound-button" class="icon-button" title="开启环境音" aria-label="开启环境音" aria-pressed="false" data-icon="sound"></button>
+        <button id="night-button" class="icon-button" title="切换到夜晚" aria-label="切换到夜晚" aria-pressed="false" data-icon="moon"></button>
+        <span class="nav-divider"></span>
+        <button id="guide-button" class="text-button">怎么玩</button>
+        <button id="share-button" class="share-button"><span data-icon="phone"></span><span>一起造风</span></button>
+      </nav>
+    </header>
+
+    <main class="world-frame" id="world-frame">
+      <canvas id="world" aria-label="可互动的像素小岛。使用下方工具给植物送风、降雨、播种、投喂动物，或拨动潮汐。" tabindex="0"></canvas>
+      <div class="world-topline">
+        <div class="world-label"><span class="live-dot"></span><span id="season-label">晴昼 · 小岛正在呼吸</span></div>
+        <div class="topline-actions">
+          <button id="desktop-button" class="scene-button" hidden><span data-icon="desktop"></span>放到桌面</button>
+          <button id="snapshot-button" class="scene-button" title="保存小岛画面"><span data-icon="camera"></span><span class="capture-label">留张明信片</span></button>
+          <button id="fullscreen-button" class="scene-button square" title="全屏欣赏" aria-label="全屏欣赏" data-icon="expand"></button>
+        </div>
+      </div>
+      <div class="opening-note" id="opening-note">
+        <span class="eyebrow">A SMALL PLACE TO JUST BE</span>
+        <h1>让世界，<br>慢下来一点。</h1>
+        <p>送一口风，等一朵花开。</p>
+      </div>
+      <div class="world-notice" id="world-notice" role="status" aria-live="polite"></div>
+      <div class="companion-card" id="companion-card">
+        <div class="companion-title"><span class="companion-face">ᵔᴥᵔ</span><strong id="pet-name">团团</strong><span id="pet-stage">幼崽</span><span class="pet-days" id="pet-days">陪伴第 1 天</span></div>
+        <div class="satiety-row"><span>饱食度</span><span class="satiety-track"><i id="satiety-fill"></i></span><b id="satiety-value">70</b></div>
+        <p id="feed-tip">把文件拖到小岛上，给团团喂一点灵感。</p>
+      </div>
+      <div class="file-drop-overlay" id="file-drop-overlay" hidden><span data-icon="carrot"></span><strong>松开，先检查这一批文件</strong><span>确认后移入废纸篓 · 成功回收才获得饲料</span></div>
+      <div class="demo-status" id="demo-status" hidden><span class="live-dot"></span><span id="demo-message"></span><button id="demo-stop">结束</button></div>
+
+      <div class="bottom-ui">
+        <div class="interaction-hint"><span class="hint-dot"></span><span id="tool-hint">轻点海面泛起涟漪 · 拖动白云，给花园下一场雨</span></div>
+        <div class="controls-row">
+          <div class="tool-dock" role="toolbar" aria-label="花园互动工具">
+            <button class="tool active" data-tool="explore" aria-pressed="true"><span data-icon="hand"></span><span>漫游</span><kbd>1</kbd></button>
+            <button class="tool" data-tool="wind" aria-pressed="false"><span data-icon="wind"></span><span>送风</span><kbd>2</kbd></button>
+            <button class="tool" data-tool="rain" aria-pressed="false"><span data-icon="rain"></span><span>落雨</span><kbd>3</kbd></button>
+            <button class="tool" data-tool="seed" aria-pressed="false"><span data-icon="seed"></span><span>播种</span><kbd>4</kbd></button>
+            <button class="tool" data-tool="food" aria-pressed="false"><span data-icon="carrot"></span><span>投喂</span><kbd>5</kbd></button>
+            <button class="tool" data-tool="tide" aria-pressed="false"><span data-icon="tide"></span><span>潮汐</span><kbd>6</kbd></button>
+          </div>
+          <button id="mic-button" class="mic-button" aria-pressed="false" title="启用麦克风，用吹气为小岛送风"><span data-icon="mic"></span><span id="mic-label">吹一口气</span><span class="mic-meter"><i id="mic-level"></i></span></button>
+          <button id="demo-button" class="wonder-button" title="观看一段可随时结束的互动演示"><span data-icon="spark"></span><span>小小奇迹</span></button>
+        </div>
+        <div class="tide-panel" id="tide-panel" hidden><span>退潮</span><input id="tide-range" type="range" min="0" max="100" value="50" aria-label="潮水高度"><span>涨潮</span></div>
+        <div class="seed-panel" id="seed-panel" hidden><label for="seed-species">种下一点喜欢</label><select id="seed-species"><option value="">随缘 · 一朵小花</option></select><span id="seed-detail">每种植物都有 5 个生长阶段</span></div>
+        <div class="mic-note" id="mic-note" hidden>声音只在本机分析，不录音。轻轻吹气，也可以用「送风」工具。</div>
+      </div>
+      <div id="loading-state" class="loading-state"><span class="loading-flower">✿</span><p>一座小岛正在苏醒…</p></div>
+    </main>
+
+    <footer class="site-footer"><span><span class="save-dot"></span><span id="save-label">小岛会记得你种下的花</span></span><span id="garden-count">风经过的地方，会有花开。</span><button id="quiet-button">隐去界面 <kbd>H</kbd></button></footer>
+  </div>
+  <button id="restore-ui" hidden aria-label="显示界面">显示界面 <kbd>H</kbd></button>
+
+  <dialog id="feed-dialog" class="panel-dialog feed-dialog">
+    <button class="close-dialog" data-close="feed-dialog" aria-label="关闭文件堆肥">×</button>
+    <span class="eyebrow">A LITTLE LESS CLUTTER</span><h2>整理一点，<br>给小岛一份点心。</h2>
+    <p class="panel-description">把不再需要的文件拖到小岛，或在这里选择。确认后，文件会移入系统废纸篓；每个成功回收的文件得到 1 份饲料。</p>
+    <input type="file" id="compost-files" multiple hidden>
+    <button id="choose-compost-files" class="secondary-button">选择要回收的文件…</button>
+    <div id="compost-list" class="compost-list" aria-live="polite"></div>
+    <p id="compost-status" class="panel-status" role="status">不会自动扫描文件。只有你在这里确认的文件才会被处理。</p>
+    <div class="dialog-actions"><button id="open-trash" class="secondary-button">打开废纸篓</button><button id="confirm-compost" class="primary-button" disabled>确认移入废纸篓</button></div>
+    <div class="resource-summary"><span>饲料篮 <b id="food-count">0</b> 份</span><span>小水壶 <b id="water-count">0</b> 滴</span></div>
+    <button id="give-food" class="secondary-button full-width">投放 1 份饲料到草地</button>
+  </dialog>
+
+  <dialog id="focus-dialog" class="panel-dialog focus-dialog">
+    <button class="close-dialog" data-close="focus-dialog" aria-label="关闭专注面板">×</button>
+    <span class="eyebrow">WORK GENTLY, GROW SLOWLY</span><h2>你忙你的，<br>小岛陪着你。</h2>
+    <p class="panel-description">完成一段专注，为小水壶收集 3 滴水。阅读和思考也算专注，停下打字不会影响计时。</p>
+    <div class="focus-clock" id="focus-clock">25:00</div><p class="panel-status" id="focus-state">准备开始</p>
+    <label class="focus-duration">专注时长 <select id="focus-minutes"><option value="25">25 分钟</option><option value="10">10 分钟</option><option value="5">5 分钟</option><option value="1">1 分钟 · 快速体验</option></select></label>
+    <div class="dialog-actions"><button id="focus-start" class="primary-button">开始专注</button><button id="focus-pause" class="secondary-button" hidden>暂停</button><button id="focus-cancel" class="secondary-button" hidden>取消</button></div>
+    <label class="focus-note-label">随手记一点<textarea id="focus-note" placeholder="只在本次打开时保留；输入会带来一阵轻雨。" rows="3"></textarea></label>
+    <p class="panel-status">当前键盘雨只感知息屿应用内的输入；在其他应用工作时，专注计时照常继续。不会读取或保存按键内容。</p>
+    <button id="water-garden" class="secondary-button full-width">用 1 滴水浇花</button>
+  </dialog>
+
+  <dialog id="settings-dialog" class="panel-dialog settings-dialog">
+    <button class="close-dialog" data-close="settings-dialog" aria-label="关闭花园设置">×</button>
+    <span class="eyebrow">YOUR LITTLE CORNER</span><h2>给花园找个好位置。</h2>
+    <p class="panel-description">右键小岛或点击系统菜单栏里的叶子，可以找回这些操作。完全穿透后，用 ⌘⌥⇧G 恢复交互。</p>
+    <div class="settings-grid"><button id="native-topmost" class="secondary-button">切换置顶</button><button id="native-pass" class="secondary-button">完全鼠标穿透</button><button id="native-smaller" class="secondary-button">缩小一点 −</button><button id="native-larger" class="secondary-button">放大一点 +</button><button id="native-reset" class="secondary-button">恢复默认位置</button><button id="native-hide" class="secondary-button">隐藏花园</button></div>
+    <p class="panel-status">移动：按住 Option（⌥），拖动岛屿；或使用菜单中的移动模式。位置与尺寸会自动记住。</p>
+    <div class="dialog-actions"><button id="settings-help" class="secondary-button">玩法说明</button><button id="settings-share" class="secondary-button">邀请手机互动</button></div>
+    <button id="native-quit" class="secondary-button full-width">完全退出息屿</button>
+  </dialog>
+
+  <div id="floating-focus" class="floating-focus" hidden><span data-icon="rain"></span><span id="floating-focus-time"></span></div>
+
+  <dialog id="guide-dialog" class="panel-dialog">
+    <button class="close-dialog" data-close="guide-dialog" aria-label="关闭玩法说明">×</button>
+    <span class="eyebrow">MAKE YOURSELF AT HOME</span><h2>这里没有任务，<br>只有一点小小的回应。</h2>
+    <p class="file-guide">把不再需要的文件拖到小岛，检查清单后确认移入系统废纸篓。成功回收才会得到饲料，再投给团团。取消不会改变文件；饱食度和陪伴天数会保存，在真实的日子里它会慢慢长大。</p>
+    <div class="guide-grid">
+      <article><span data-icon="wind"></span><div><h3>把一口气变成风</h3><p>开启麦克风，轻轻吹气。草木随风摇摆，蒲公英飞向远方。也可以选「送风」长按小岛。</p></div></article>
+      <article><span data-icon="rain"></span><div><h3>借一朵云来浇花</h3><p>拖动天空中的白云到花园上方；或选择「落雨」在草地按住，让小苗渐渐开花。</p></div></article>
+      <article><span data-icon="seed"></span><div><h3>种下今天的颜色</h3><p>选择「播种」，点一处草地。给新芽浇点水，等待它长大。花园会保存在这台设备上。</p></div></article>
+      <article><span data-icon="carrot"></span><div><h3>和小生灵做朋友</h3><p>选「投喂」，把食物放到草地上，小动物会跑过来。把光标停一会儿，等蝴蝶靠近。</p></div></article>
+      <article><span data-icon="tide"></span><div><h3>用手指拨动潮水</h3><p>轻点海面泛起涟漪；选择「潮汐」，上下拖动或使用滑杆，看海水漫上沙滩。</p></div></article>
+      <article><span data-icon="moon"></span><div><h3>把夜晚轻轻点亮</h3><p>点右上角月亮切换夜晚。花园亮起萤火，也可以邀请朋友用手机一起送风、降雨。</p></div></article>
+    </div>
+    <div class="dialog-footnote">快捷键：1–6 切换工具 · 空格送风 · N 昼夜 · M 麦克风 · H 隐藏界面 · Esc 关闭面板</div>
+    <button class="primary-button" data-close="guide-dialog">去小岛上走走 <span>↗</span></button>
+  </dialog>
+
+  <dialog id="share-dialog" class="panel-dialog share-dialog">
+    <button class="close-dialog" data-close="share-dialog" aria-label="关闭邀请面板">×</button>
+    <span class="eyebrow">A LITTLE WIND, TOGETHER</span><h2>你送来的风，<br>会吹到我的小岛。</h2>
+    <p class="share-description">手机和这台电脑连上同一个 Wi-Fi，扫码进入。<br>大家可以一起送风、浇水、投喂和唤起萤火。</p>
+    <div class="qr-wrap"><img id="phone-qr" alt="手机互动二维码" width="180" height="180"><span id="qr-status">正在准备邀请…</span></div>
+    <div class="invite-link"><input id="phone-url" readonly aria-label="手机互动地址"><button id="copy-link">复制</button></div>
+    <p class="network-note" id="network-note">如果现场 Wi-Fi 隔离设备，可以让电脑和手机连接同一个手机热点。</p>
+    <div class="connection-state"><span class="live-dot"></span><span id="connection-label">等待连接</span></div>
+  </dialog>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,2905 @@
+{
+  "version": 1,
+  "description": "Runtime adapter for inspected artist PNGs. Source files are not modified. Rectangles follow visible artwork, not an assumed equal grid.",
+  "images": {
+    "islands": "islands-atlas.png",
+    "animals": "animals-atlas.png",
+    "plants": "plants-mature-atlas.png",
+    "growth-trees": "growth-trees-v2.png",
+    "growth-shrubs": "growth-shrubs-v2.png",
+    "growth-flowers": "growth-flowers.png",
+    "growth-garden": "growth-garden.png"
+  },
+  "sprites": [
+    {
+      "id": "island.pond",
+      "source": "islands",
+      "rect": [
+        14,
+        629,
+        609,
+        562
+      ],
+      "anchor": [
+        0,
+        0
+      ],
+      "category": "island"
+    },
+    {
+      "id": "animal.cat",
+      "source": "animals",
+      "rect": [
+        30,
+        45,
+        207,
+        245
+      ],
+      "anchor": [
+        0.5,
+        0.96
+      ],
+      "category": "animal",
+      "speciesId": "cat"
+    },
+    {
+      "id": "animal.dog",
+      "source": "animals",
+      "rect": [
+        295,
+        319,
+        223,
+        244
+      ],
+      "anchor": [
+        0.5,
+        0.98
+      ],
+      "category": "animal",
+      "speciesId": "dog"
+    },
+    {
+      "id": "animal.bird",
+      "source": "animals",
+      "rect": [
+        278,
+        591,
+        225,
+        181
+      ],
+      "anchor": [
+        0.5,
+        0.95
+      ],
+      "category": "animal",
+      "speciesId": "bird"
+    },
+    {
+      "id": "animal.squirrel",
+      "source": "animals",
+      "rect": [
+        26,
+        780,
+        224,
+        221
+      ],
+      "anchor": [
+        0.5,
+        0.97
+      ],
+      "category": "animal",
+      "speciesId": "squirrel"
+    },
+    {
+      "id": "animal.rabbit",
+      "source": "animals",
+      "rect": [
+        779,
+        775,
+        185,
+        225
+      ],
+      "anchor": [
+        0.5,
+        0.97
+      ],
+      "category": "animal",
+      "speciesId": "rabbit"
+    },
+    {
+      "id": "animal.duck",
+      "source": "animals",
+      "rect": [
+        1280,
+        570,
+        235,
+        210
+      ],
+      "anchor": [
+        0.5,
+        0.96
+      ],
+      "category": "animal",
+      "speciesId": "duck"
+    },
+    {
+      "id": "decor.oak",
+      "source": "plants",
+      "rect": [
+        4,
+        24,
+        268,
+        317
+      ],
+      "anchor": [
+        0.5,
+        0.96
+      ],
+      "category": "decoration",
+      "speciesId": "oak",
+      "stage": 4
+    },
+    {
+      "id": "decor.pine",
+      "source": "plants",
+      "rect": [
+        514,
+        11,
+        246,
+        331
+      ],
+      "anchor": [
+        0.5,
+        0.96
+      ],
+      "category": "decoration",
+      "speciesId": "pine",
+      "stage": 4
+    },
+    {
+      "id": "decor.apple",
+      "source": "plants",
+      "rect": [
+        1024,
+        32,
+        253,
+        310
+      ],
+      "anchor": [
+        0.5,
+        0.96
+      ],
+      "category": "decoration",
+      "speciesId": "apple",
+      "stage": 4
+    },
+    {
+      "id": "plant.oak.0",
+      "source": "growth-trees",
+      "rect": [
+        85,
+        210,
+        63,
+        54
+      ],
+      "anchor": [
+        0.4603174603174603,
+        0.9444444444444444
+      ],
+      "category": "plant",
+      "speciesId": "oak",
+      "stage": 0,
+      "label": "橡实",
+      "worldScale": 0.293023,
+      "artistId": "plant-oak-stage-0"
+    },
+    {
+      "id": "plant.oak.1",
+      "source": "growth-trees",
+      "rect": [
+        281,
+        191,
+        84,
+        71
+      ],
+      "anchor": [
+        0.44047619047619047,
+        0.9577464788732394
+      ],
+      "category": "plant",
+      "speciesId": "oak",
+      "stage": 1,
+      "label": "双叶萌芽",
+      "worldScale": 0.293023,
+      "artistId": "plant-oak-stage-1"
+    },
+    {
+      "id": "plant.oak.2",
+      "source": "growth-trees",
+      "rect": [
+        472,
+        125,
+        122,
+        136
+      ],
+      "anchor": [
+        0.48360655737704916,
+        0.9779411764705882
+      ],
+      "category": "plant",
+      "speciesId": "oak",
+      "stage": 2,
+      "label": "木质幼苗",
+      "worldScale": 0.293023,
+      "artistId": "plant-oak-stage-2"
+    },
+    {
+      "id": "plant.oak.3",
+      "source": "growth-trees",
+      "rect": [
+        666,
+        75,
+        163,
+        187
+      ],
+      "anchor": [
+        0.50920245398773,
+        0.983957219251337
+      ],
+      "category": "plant",
+      "speciesId": "oak",
+      "stage": 3,
+      "label": "分枝小树",
+      "worldScale": 0.293023,
+      "artistId": "plant-oak-stage-3"
+    },
+    {
+      "id": "plant.oak.4",
+      "source": "growth-trees",
+      "rect": [
+        877,
+        46,
+        221,
+        215
+      ],
+      "anchor": [
+        0.502262443438914,
+        0.9906976744186047
+      ],
+      "category": "plant",
+      "speciesId": "oak",
+      "stage": 4,
+      "label": "圆冠成树",
+      "worldScale": 0.293023,
+      "artistId": "plant-oak-stage-4"
+    },
+    {
+      "id": "plant.birch.0",
+      "source": "growth-trees",
+      "rect": [
+        86,
+        434,
+        62,
+        50
+      ],
+      "anchor": [
+        0.5,
+        0.94
+      ],
+      "category": "plant",
+      "speciesId": "birch",
+      "stage": 0,
+      "label": "种子",
+      "worldScale": 0.311881,
+      "artistId": "plant-birch-stage-0"
+    },
+    {
+      "id": "plant.birch.1",
+      "source": "growth-trees",
+      "rect": [
+        278,
+        417,
+        84,
+        67
+      ],
+      "anchor": [
+        0.47619047619047616,
+        0.9552238805970149
+      ],
+      "category": "plant",
+      "speciesId": "birch",
+      "stage": 1,
+      "label": "双叶萌芽",
+      "worldScale": 0.311881,
+      "artistId": "plant-birch-stage-1"
+    },
+    {
+      "id": "plant.birch.2",
+      "source": "growth-trees",
+      "rect": [
+        487,
+        330,
+        92,
+        153
+      ],
+      "anchor": [
+        0.5108695652173914,
+        0.9803921568627451
+      ],
+      "category": "plant",
+      "speciesId": "birch",
+      "stage": 2,
+      "label": "细干幼苗",
+      "worldScale": 0.311881,
+      "artistId": "plant-birch-stage-2"
+    },
+    {
+      "id": "plant.birch.3",
+      "source": "growth-trees",
+      "rect": [
+        667,
+        287,
+        158,
+        196
+      ],
+      "anchor": [
+        0.5063291139240507,
+        0.9846938775510204
+      ],
+      "category": "plant",
+      "speciesId": "birch",
+      "stage": 3,
+      "label": "白皮幼树",
+      "worldScale": 0.311881,
+      "artistId": "plant-birch-stage-3"
+    },
+    {
+      "id": "plant.birch.4",
+      "source": "growth-trees",
+      "rect": [
+        884,
+        282,
+        208,
+        202
+      ],
+      "anchor": [
+        0.5048076923076923,
+        0.9851485148514851
+      ],
+      "category": "plant",
+      "speciesId": "birch",
+      "stage": 4,
+      "label": "白桦成树",
+      "worldScale": 0.311881,
+      "artistId": "plant-birch-stage-4"
+    },
+    {
+      "id": "plant.pine.0",
+      "source": "growth-trees",
+      "rect": [
+        88,
+        670,
+        60,
+        46
+      ],
+      "anchor": [
+        0.48333333333333334,
+        0.9347826086956522
+      ],
+      "category": "plant",
+      "speciesId": "pine",
+      "stage": 0,
+      "label": "松籽萌动",
+      "worldScale": 0.29717,
+      "artistId": "plant-pine-stage-0"
+    },
+    {
+      "id": "plant.pine.1",
+      "source": "growth-trees",
+      "rect": [
+        281,
+        653,
+        73,
+        63
+      ],
+      "anchor": [
+        0.5068493150684932,
+        0.9523809523809523
+      ],
+      "category": "plant",
+      "speciesId": "pine",
+      "stage": 1,
+      "label": "针叶幼芽",
+      "worldScale": 0.29717,
+      "artistId": "plant-pine-stage-1"
+    },
+    {
+      "id": "plant.pine.2",
+      "source": "growth-trees",
+      "rect": [
+        482,
+        566,
+        104,
+        149
+      ],
+      "anchor": [
+        0.49038461538461536,
+        0.9798657718120806
+      ],
+      "category": "plant",
+      "speciesId": "pine",
+      "stage": 2,
+      "label": "分层幼苗",
+      "worldScale": 0.29717,
+      "artistId": "plant-pine-stage-2"
+    },
+    {
+      "id": "plant.pine.3",
+      "source": "growth-trees",
+      "rect": [
+        671,
+        520,
+        160,
+        195
+      ],
+      "anchor": [
+        0.49375,
+        0.9846153846153847
+      ],
+      "category": "plant",
+      "speciesId": "pine",
+      "stage": 3,
+      "label": "锥形幼树",
+      "worldScale": 0.29717,
+      "artistId": "plant-pine-stage-3"
+    },
+    {
+      "id": "plant.pine.4",
+      "source": "growth-trees",
+      "rect": [
+        897,
+        504,
+        197,
+        212
+      ],
+      "anchor": [
+        0.4720812182741117,
+        0.9858490566037735
+      ],
+      "category": "plant",
+      "speciesId": "pine",
+      "stage": 4,
+      "label": "层叠松冠",
+      "worldScale": 0.29717,
+      "artistId": "plant-pine-stage-4"
+    },
+    {
+      "id": "plant.cherry.0",
+      "source": "growth-trees",
+      "rect": [
+        89,
+        878,
+        59,
+        45
+      ],
+      "anchor": [
+        0.4915254237288136,
+        0.9333333333333333
+      ],
+      "category": "plant",
+      "speciesId": "cherry",
+      "stage": 0,
+      "label": "种子",
+      "worldScale": 0.336898,
+      "artistId": "plant-cherry-stage-0"
+    },
+    {
+      "id": "plant.cherry.1",
+      "source": "growth-trees",
+      "rect": [
+        274,
+        846,
+        92,
+        75
+      ],
+      "anchor": [
+        0.4782608695652174,
+        0.9733333333333334
+      ],
+      "category": "plant",
+      "speciesId": "cherry",
+      "stage": 1,
+      "label": "双叶萌芽",
+      "worldScale": 0.336898,
+      "artistId": "plant-cherry-stage-1"
+    },
+    {
+      "id": "plant.cherry.2",
+      "source": "growth-trees",
+      "rect": [
+        474,
+        765,
+        125,
+        155
+      ],
+      "anchor": [
+        0.472,
+        0.9806451612903225
+      ],
+      "category": "plant",
+      "speciesId": "cherry",
+      "stage": 2,
+      "label": "绿叶幼苗",
+      "worldScale": 0.336898,
+      "artistId": "plant-cherry-stage-2"
+    },
+    {
+      "id": "plant.cherry.3",
+      "source": "growth-trees",
+      "rect": [
+        674,
+        757,
+        156,
+        165
+      ],
+      "anchor": [
+        0.4935897435897436,
+        0.9818181818181818
+      ],
+      "category": "plant",
+      "speciesId": "cherry",
+      "stage": 3,
+      "label": "粉色花苞",
+      "worldScale": 0.336898,
+      "artistId": "plant-cherry-stage-3"
+    },
+    {
+      "id": "plant.cherry.4",
+      "source": "growth-trees",
+      "rect": [
+        880,
+        735,
+        232,
+        187
+      ],
+      "anchor": [
+        0.5,
+        0.983957219251337
+      ],
+      "category": "plant",
+      "speciesId": "cherry",
+      "stage": 4,
+      "label": "盛开樱花",
+      "worldScale": 0.336898,
+      "artistId": "plant-cherry-stage-4"
+    },
+    {
+      "id": "plant.apple.0",
+      "source": "growth-trees",
+      "rect": [
+        85,
+        1079,
+        60,
+        44
+      ],
+      "anchor": [
+        0.5,
+        0.9318181818181818
+      ],
+      "category": "plant",
+      "speciesId": "apple",
+      "stage": 0,
+      "label": "种子",
+      "worldScale": 0.35,
+      "artistId": "plant-apple-stage-0"
+    },
+    {
+      "id": "plant.apple.1",
+      "source": "growth-trees",
+      "rect": [
+        279,
+        1038,
+        92,
+        81
+      ],
+      "anchor": [
+        0.45652173913043476,
+        0.9629629629629629
+      ],
+      "category": "plant",
+      "speciesId": "apple",
+      "stage": 1,
+      "label": "双叶萌芽",
+      "worldScale": 0.35,
+      "artistId": "plant-apple-stage-1"
+    },
+    {
+      "id": "plant.apple.2",
+      "source": "growth-trees",
+      "rect": [
+        474,
+        970,
+        124,
+        149
+      ],
+      "anchor": [
+        0.4596774193548387,
+        0.9798657718120806
+      ],
+      "category": "plant",
+      "speciesId": "apple",
+      "stage": 2,
+      "label": "绿叶幼树",
+      "worldScale": 0.35,
+      "artistId": "plant-apple-stage-2"
+    },
+    {
+      "id": "plant.apple.3",
+      "source": "growth-trees",
+      "rect": [
+        671,
+        951,
+        169,
+        168
+      ],
+      "anchor": [
+        0.4911242603550296,
+        0.9821428571428571
+      ],
+      "category": "plant",
+      "speciesId": "apple",
+      "stage": 3,
+      "label": "白花初开",
+      "worldScale": 0.35,
+      "artistId": "plant-apple-stage-3"
+    },
+    {
+      "id": "plant.apple.4",
+      "source": "growth-trees",
+      "rect": [
+        894,
+        939,
+        209,
+        180
+      ],
+      "anchor": [
+        0.5023923444976076,
+        0.9833333333333333
+      ],
+      "category": "plant",
+      "speciesId": "apple",
+      "stage": 4,
+      "label": "红苹果成熟",
+      "worldScale": 0.35,
+      "artistId": "plant-apple-stage-4"
+    },
+    {
+      "id": "plant.willow.0",
+      "source": "growth-trees",
+      "rect": [
+        89,
+        1269,
+        59,
+        55
+      ],
+      "anchor": [
+        0.5084745762711864,
+        0.9454545454545454
+      ],
+      "category": "plant",
+      "speciesId": "willow",
+      "stage": 0,
+      "label": "根芽",
+      "worldScale": 0.331579,
+      "artistId": "plant-willow-stage-0"
+    },
+    {
+      "id": "plant.willow.1",
+      "source": "growth-trees",
+      "rect": [
+        286,
+        1235,
+        88,
+        88
+      ],
+      "anchor": [
+        0.38636363636363635,
+        0.9659090909090909
+      ],
+      "category": "plant",
+      "speciesId": "willow",
+      "stage": 1,
+      "label": "窄叶嫩苗",
+      "worldScale": 0.331579,
+      "artistId": "plant-willow-stage-1"
+    },
+    {
+      "id": "plant.willow.2",
+      "source": "growth-trees",
+      "rect": [
+        466,
+        1169,
+        130,
+        154
+      ],
+      "anchor": [
+        0.49230769230769234,
+        0.9805194805194806
+      ],
+      "category": "plant",
+      "speciesId": "willow",
+      "stage": 2,
+      "label": "分枝幼树",
+      "worldScale": 0.331579,
+      "artistId": "plant-willow-stage-2"
+    },
+    {
+      "id": "plant.willow.3",
+      "source": "growth-trees",
+      "rect": [
+        658,
+        1157,
+        185,
+        167
+      ],
+      "anchor": [
+        0.4918918918918919,
+        0.9820359281437125
+      ],
+      "category": "plant",
+      "speciesId": "willow",
+      "stage": 3,
+      "label": "枝条下垂",
+      "worldScale": 0.331579,
+      "artistId": "plant-willow-stage-3"
+    },
+    {
+      "id": "plant.willow.4",
+      "source": "growth-trees",
+      "rect": [
+        891,
+        1135,
+        220,
+        190
+      ],
+      "anchor": [
+        0.509090909090909,
+        0.9842105263157894
+      ],
+      "category": "plant",
+      "speciesId": "willow",
+      "stage": 4,
+      "label": "垂柳成树",
+      "worldScale": 0.331579,
+      "artistId": "plant-willow-stage-4"
+    },
+    {
+      "id": "plant.blueberry.0",
+      "source": "growth-shrubs",
+      "rect": [
+        83,
+        210,
+        64,
+        46
+      ],
+      "anchor": [
+        0.484375,
+        0.9347826086956522
+      ],
+      "category": "plant",
+      "speciesId": "blueberry",
+      "stage": 0,
+      "label": "种子萌动",
+      "worldScale": 0.159204,
+      "artistId": "plant-blueberry-stage-0"
+    },
+    {
+      "id": "plant.blueberry.1",
+      "source": "growth-shrubs",
+      "rect": [
+        273,
+        183,
+        81,
+        75
+      ],
+      "anchor": [
+        0.4567901234567901,
+        0.96
+      ],
+      "category": "plant",
+      "speciesId": "blueberry",
+      "stage": 1,
+      "label": "双叶幼苗",
+      "worldScale": 0.159204,
+      "artistId": "plant-blueberry-stage-1"
+    },
+    {
+      "id": "plant.blueberry.2",
+      "source": "growth-shrubs",
+      "rect": [
+        454,
+        125,
+        127,
+        128
+      ],
+      "anchor": [
+        0.48031496062992124,
+        0.9765625
+      ],
+      "category": "plant",
+      "speciesId": "blueberry",
+      "stage": 2,
+      "label": "分枝小灌木",
+      "worldScale": 0.159204,
+      "artistId": "plant-blueberry-stage-2"
+    },
+    {
+      "id": "plant.blueberry.3",
+      "source": "growth-shrubs",
+      "rect": [
+        641,
+        85,
+        199,
+        170
+      ],
+      "anchor": [
+        0.48743718592964824,
+        0.9823529411764705
+      ],
+      "category": "plant",
+      "speciesId": "blueberry",
+      "stage": 3,
+      "label": "开花青果",
+      "worldScale": 0.159204,
+      "artistId": "plant-blueberry-stage-3"
+    },
+    {
+      "id": "plant.blueberry.4",
+      "source": "growth-shrubs",
+      "rect": [
+        884,
+        54,
+        233,
+        201
+      ],
+      "anchor": [
+        0.5021459227467812,
+        0.9850746268656716
+      ],
+      "category": "plant",
+      "speciesId": "blueberry",
+      "stage": 4,
+      "label": "蓝莓成熟",
+      "worldScale": 0.159204,
+      "artistId": "plant-blueberry-stage-4"
+    },
+    {
+      "id": "plant.raspberry.0",
+      "source": "growth-shrubs",
+      "rect": [
+        80,
+        449,
+        67,
+        57
+      ],
+      "anchor": [
+        0.47761194029850745,
+        0.9473684210526315
+      ],
+      "category": "plant",
+      "speciesId": "raspberry",
+      "stage": 0,
+      "label": "根芽",
+      "worldScale": 0.148837,
+      "artistId": "plant-raspberry-stage-0"
+    },
+    {
+      "id": "plant.raspberry.1",
+      "source": "growth-shrubs",
+      "rect": [
+        274,
+        385,
+        97,
+        120
+      ],
+      "anchor": [
+        0.4329896907216495,
+        0.975
+      ],
+      "category": "plant",
+      "speciesId": "raspberry",
+      "stage": 1,
+      "label": "嫩茎长叶",
+      "worldScale": 0.148837,
+      "artistId": "plant-raspberry-stage-1"
+    },
+    {
+      "id": "plant.raspberry.2",
+      "source": "growth-shrubs",
+      "rect": [
+        433,
+        320,
+        160,
+        186
+      ],
+      "anchor": [
+        0.5125,
+        0.9838709677419355
+      ],
+      "category": "plant",
+      "speciesId": "raspberry",
+      "stage": 2,
+      "label": "多枝幼株",
+      "worldScale": 0.148837,
+      "artistId": "plant-raspberry-stage-2"
+    },
+    {
+      "id": "plant.raspberry.3",
+      "source": "growth-shrubs",
+      "rect": [
+        638,
+        303,
+        197,
+        203
+      ],
+      "anchor": [
+        0.49746192893401014,
+        0.9852216748768473
+      ],
+      "category": "plant",
+      "speciesId": "raspberry",
+      "stage": 3,
+      "label": "开花青果",
+      "worldScale": 0.148837,
+      "artistId": "plant-raspberry-stage-3"
+    },
+    {
+      "id": "plant.raspberry.4",
+      "source": "growth-shrubs",
+      "rect": [
+        878,
+        292,
+        249,
+        215
+      ],
+      "anchor": [
+        0.46586345381526106,
+        0.986046511627907
+      ],
+      "category": "plant",
+      "speciesId": "raspberry",
+      "stage": 4,
+      "label": "红果成熟",
+      "worldScale": 0.148837,
+      "artistId": "plant-raspberry-stage-4"
+    },
+    {
+      "id": "plant.hydrangea.0",
+      "source": "growth-shrubs",
+      "rect": [
+        77,
+        677,
+        69,
+        55
+      ],
+      "anchor": [
+        0.4927536231884058,
+        0.9454545454545454
+      ],
+      "category": "plant",
+      "speciesId": "hydrangea",
+      "stage": 0,
+      "label": "根芽",
+      "worldScale": 0.161616,
+      "artistId": "plant-hydrangea-stage-0"
+    },
+    {
+      "id": "plant.hydrangea.1",
+      "source": "growth-shrubs",
+      "rect": [
+        264,
+        653,
+        107,
+        79
+      ],
+      "anchor": [
+        0.4766355140186916,
+        0.9620253164556962
+      ],
+      "category": "plant",
+      "speciesId": "hydrangea",
+      "stage": 1,
+      "label": "宽叶幼苗",
+      "worldScale": 0.161616,
+      "artistId": "plant-hydrangea-stage-1"
+    },
+    {
+      "id": "plant.hydrangea.2",
+      "source": "growth-shrubs",
+      "rect": [
+        438,
+        608,
+        165,
+        125
+      ],
+      "anchor": [
+        0.4666666666666667,
+        0.976
+      ],
+      "category": "plant",
+      "speciesId": "hydrangea",
+      "stage": 2,
+      "label": "多层叶丛",
+      "worldScale": 0.161616,
+      "artistId": "plant-hydrangea-stage-2"
+    },
+    {
+      "id": "plant.hydrangea.3",
+      "source": "growth-shrubs",
+      "rect": [
+        642,
+        560,
+        203,
+        173
+      ],
+      "anchor": [
+        0.4729064039408867,
+        0.9826589595375722
+      ],
+      "category": "plant",
+      "speciesId": "hydrangea",
+      "stage": 3,
+      "label": "紧密花球",
+      "worldScale": 0.161616,
+      "artistId": "plant-hydrangea-stage-3"
+    },
+    {
+      "id": "plant.hydrangea.4",
+      "source": "growth-shrubs",
+      "rect": [
+        881,
+        536,
+        243,
+        198
+      ],
+      "anchor": [
+        0.48559670781893005,
+        0.9848484848484849
+      ],
+      "category": "plant",
+      "speciesId": "hydrangea",
+      "stage": 4,
+      "label": "蓝紫花球盛开",
+      "worldScale": 0.161616,
+      "artistId": "plant-hydrangea-stage-4"
+    },
+    {
+      "id": "plant.fern.0",
+      "source": "growth-shrubs",
+      "rect": [
+        77,
+        904,
+        66,
+        55
+      ],
+      "anchor": [
+        0.48484848484848486,
+        0.9454545454545454
+      ],
+      "category": "plant",
+      "speciesId": "fern",
+      "stage": 0,
+      "label": "贴地卷芽",
+      "worldScale": 0.160804,
+      "artistId": "plant-fern-stage-0"
+    },
+    {
+      "id": "plant.fern.1",
+      "source": "growth-shrubs",
+      "rect": [
+        277,
+        864,
+        70,
+        93
+      ],
+      "anchor": [
+        0.4714285714285714,
+        0.967741935483871
+      ],
+      "category": "plant",
+      "speciesId": "fern",
+      "stage": 1,
+      "label": "卷曲嫩叶",
+      "worldScale": 0.160804,
+      "artistId": "plant-fern-stage-1"
+    },
+    {
+      "id": "plant.fern.2",
+      "source": "growth-shrubs",
+      "rect": [
+        447,
+        820,
+        143,
+        138
+      ],
+      "anchor": [
+        0.45454545454545453,
+        0.9855072463768116
+      ],
+      "category": "plant",
+      "speciesId": "fern",
+      "stage": 2,
+      "label": "叶片初展",
+      "worldScale": 0.160804,
+      "artistId": "plant-fern-stage-2"
+    },
+    {
+      "id": "plant.fern.3",
+      "source": "growth-shrubs",
+      "rect": [
+        630,
+        767,
+        229,
+        191
+      ],
+      "anchor": [
+        0.49344978165938863,
+        0.9842931937172775
+      ],
+      "category": "plant",
+      "speciesId": "fern",
+      "stage": 3,
+      "label": "羽叶展开",
+      "worldScale": 0.160804,
+      "artistId": "plant-fern-stage-3"
+    },
+    {
+      "id": "plant.fern.4",
+      "source": "growth-shrubs",
+      "rect": [
+        869,
+        760,
+        262,
+        199
+      ],
+      "anchor": [
+        0.5038167938931297,
+        0.9849246231155779
+      ],
+      "category": "plant",
+      "speciesId": "fern",
+      "stage": 4,
+      "label": "完整蕨叶丛",
+      "worldScale": 0.160804,
+      "artistId": "plant-fern-stage-4"
+    },
+    {
+      "id": "plant.cattail.0",
+      "source": "growth-shrubs",
+      "rect": [
+        77,
+        1124,
+        67,
+        60
+      ],
+      "anchor": [
+        0.47761194029850745,
+        0.95
+      ],
+      "category": "plant",
+      "speciesId": "cattail",
+      "stage": 0,
+      "label": "根茎萌芽",
+      "worldScale": 0.177273,
+      "artistId": "plant-cattail-stage-0"
+    },
+    {
+      "id": "plant.cattail.1",
+      "source": "growth-shrubs",
+      "rect": [
+        274,
+        1081,
+        84,
+        100
+      ],
+      "anchor": [
+        0.4523809523809524,
+        0.98
+      ],
+      "category": "plant",
+      "speciesId": "cattail",
+      "stage": 1,
+      "label": "细叶幼苗",
+      "worldScale": 0.177273,
+      "artistId": "plant-cattail-stage-1"
+    },
+    {
+      "id": "plant.cattail.2",
+      "source": "growth-shrubs",
+      "rect": [
+        448,
+        1035,
+        126,
+        147
+      ],
+      "anchor": [
+        0.5,
+        0.9795918367346939
+      ],
+      "category": "plant",
+      "speciesId": "cattail",
+      "stage": 2,
+      "label": "长叶成束",
+      "worldScale": 0.177273,
+      "artistId": "plant-cattail-stage-2"
+    },
+    {
+      "id": "plant.cattail.3",
+      "source": "growth-shrubs",
+      "rect": [
+        633,
+        984,
+        207,
+        198
+      ],
+      "anchor": [
+        0.5169082125603864,
+        0.98989898989899
+      ],
+      "category": "plant",
+      "speciesId": "cattail",
+      "stage": 3,
+      "label": "幼嫩绿穗",
+      "worldScale": 0.177273,
+      "artistId": "plant-cattail-stage-3"
+    },
+    {
+      "id": "plant.cattail.4",
+      "source": "growth-shrubs",
+      "rect": [
+        881,
+        964,
+        246,
+        220
+      ],
+      "anchor": [
+        0.4959349593495935,
+        0.9863636363636363
+      ],
+      "category": "plant",
+      "speciesId": "cattail",
+      "stage": 4,
+      "label": "棕色花穗",
+      "worldScale": 0.177273,
+      "artistId": "plant-cattail-stage-4"
+    },
+    {
+      "id": "plant.waterlily.0",
+      "source": "growth-shrubs",
+      "rect": [
+        77,
+        1261,
+        65,
+        65
+      ],
+      "anchor": [
+        0.47692307692307695,
+        0.9538461538461539
+      ],
+      "category": "plant",
+      "speciesId": "waterlily",
+      "stage": 0,
+      "label": "水生嫩芽",
+      "worldScale": 0.144,
+      "artistId": "plant-waterlily-stage-0"
+    },
+    {
+      "id": "plant.waterlily.1",
+      "source": "growth-shrubs",
+      "rect": [
+        262,
+        1263,
+        82,
+        52
+      ],
+      "anchor": [
+        0.524390243902439,
+        0.9423076923076923
+      ],
+      "category": "plant",
+      "speciesId": "waterlily",
+      "stage": 1,
+      "label": "单片小浮叶",
+      "worldScale": 0.144,
+      "artistId": "plant-waterlily-stage-1"
+    },
+    {
+      "id": "plant.waterlily.2",
+      "source": "growth-shrubs",
+      "rect": [
+        440,
+        1240,
+        154,
+        73
+      ],
+      "anchor": [
+        0.45454545454545453,
+        0.958904109589041
+      ],
+      "category": "plant",
+      "speciesId": "waterlily",
+      "stage": 2,
+      "label": "多片浮叶",
+      "worldScale": 0.144,
+      "artistId": "plant-waterlily-stage-2"
+    },
+    {
+      "id": "plant.waterlily.3",
+      "source": "growth-shrubs",
+      "rect": [
+        657,
+        1215,
+        184,
+        113
+      ],
+      "anchor": [
+        0.40217391304347827,
+        0.9734513274336283
+      ],
+      "category": "plant",
+      "speciesId": "waterlily",
+      "stage": 3,
+      "label": "粉色花苞",
+      "worldScale": 0.144,
+      "artistId": "plant-waterlily-stage-3"
+    },
+    {
+      "id": "plant.waterlily.4",
+      "source": "growth-shrubs",
+      "rect": [
+        895,
+        1206,
+        223,
+        125
+      ],
+      "anchor": [
+        0.6143497757847534,
+        0.976
+      ],
+      "category": "plant",
+      "speciesId": "waterlily",
+      "stage": 4,
+      "label": "睡莲盛开",
+      "worldScale": 0.144,
+      "artistId": "plant-waterlily-stage-4"
+    },
+    {
+      "id": "plant.sunflower.0",
+      "source": "growth-flowers",
+      "rect": [
+        85,
+        266,
+        62,
+        52
+      ],
+      "anchor": [
+        0.5,
+        0.9423076923076923
+      ],
+      "category": "plant",
+      "speciesId": "sunflower",
+      "stage": 0,
+      "label": "葵花籽",
+      "worldScale": 0.111111,
+      "artistId": "plant-sunflower-stage-0"
+    },
+    {
+      "id": "plant.sunflower.1",
+      "source": "growth-flowers",
+      "rect": [
+        288,
+        243,
+        96,
+        75
+      ],
+      "anchor": [
+        0.4791666666666667,
+        0.96
+      ],
+      "category": "plant",
+      "speciesId": "sunflower",
+      "stage": 1,
+      "label": "双叶幼苗",
+      "worldScale": 0.111111,
+      "artistId": "plant-sunflower-stage-1"
+    },
+    {
+      "id": "plant.sunflower.2",
+      "source": "growth-flowers",
+      "rect": [
+        472,
+        155,
+        164,
+        164
+      ],
+      "anchor": [
+        0.5060975609756098,
+        0.9817073170731707
+      ],
+      "category": "plant",
+      "speciesId": "sunflower",
+      "stage": 2,
+      "label": "宽叶高茎",
+      "worldScale": 0.111111,
+      "artistId": "plant-sunflower-stage-2"
+    },
+    {
+      "id": "plant.sunflower.3",
+      "source": "growth-flowers",
+      "rect": [
+        678,
+        73,
+        187,
+        245
+      ],
+      "anchor": [
+        0.46524064171123,
+        0.9877551020408163
+      ],
+      "category": "plant",
+      "speciesId": "sunflower",
+      "stage": 3,
+      "label": "闭合花苞",
+      "worldScale": 0.111111,
+      "artistId": "plant-sunflower-stage-3"
+    },
+    {
+      "id": "plant.sunflower.4",
+      "source": "growth-flowers",
+      "rect": [
+        907,
+        21,
+        211,
+        297
+      ],
+      "anchor": [
+        0.46445497630331756,
+        0.98989898989899
+      ],
+      "category": "plant",
+      "speciesId": "sunflower",
+      "stage": 4,
+      "label": "金色花盘开放",
+      "worldScale": 0.111111,
+      "artistId": "plant-sunflower-stage-4"
+    },
+    {
+      "id": "plant.daisy.0",
+      "source": "growth-flowers",
+      "rect": [
+        92,
+        470,
+        54,
+        40
+      ],
+      "anchor": [
+        0.5,
+        0.925
+      ],
+      "category": "plant",
+      "speciesId": "daisy",
+      "stage": 0,
+      "label": "种子",
+      "worldScale": 0.159091,
+      "artistId": "plant-daisy-stage-0"
+    },
+    {
+      "id": "plant.daisy.1",
+      "source": "growth-flowers",
+      "rect": [
+        283,
+        447,
+        97,
+        66
+      ],
+      "anchor": [
+        0.4845360824742268,
+        0.9545454545454546
+      ],
+      "category": "plant",
+      "speciesId": "daisy",
+      "stage": 1,
+      "label": "双叶幼苗",
+      "worldScale": 0.159091,
+      "artistId": "plant-daisy-stage-1"
+    },
+    {
+      "id": "plant.daisy.2",
+      "source": "growth-flowers",
+      "rect": [
+        483,
+        411,
+        140,
+        103
+      ],
+      "anchor": [
+        0.4857142857142857,
+        0.970873786407767
+      ],
+      "category": "plant",
+      "speciesId": "daisy",
+      "stage": 2,
+      "label": "低矮叶丛",
+      "worldScale": 0.159091,
+      "artistId": "plant-daisy-stage-2"
+    },
+    {
+      "id": "plant.daisy.3",
+      "source": "growth-flowers",
+      "rect": [
+        690,
+        360,
+        157,
+        155
+      ],
+      "anchor": [
+        0.4968152866242038,
+        0.9806451612903225
+      ],
+      "category": "plant",
+      "speciesId": "daisy",
+      "stage": 3,
+      "label": "绿色花苞",
+      "worldScale": 0.159091,
+      "artistId": "plant-daisy-stage-3"
+    },
+    {
+      "id": "plant.daisy.4",
+      "source": "growth-flowers",
+      "rect": [
+        909,
+        339,
+        194,
+        176
+      ],
+      "anchor": [
+        0.4587628865979381,
+        0.9829545454545454
+      ],
+      "category": "plant",
+      "speciesId": "daisy",
+      "stage": 4,
+      "label": "白瓣黄心花",
+      "worldScale": 0.159091,
+      "artistId": "plant-daisy-stage-4"
+    },
+    {
+      "id": "plant.lavender.0",
+      "source": "growth-flowers",
+      "rect": [
+        92,
+        707,
+        54,
+        39
+      ],
+      "anchor": [
+        0.5,
+        0.9487179487179487
+      ],
+      "category": "plant",
+      "speciesId": "lavender",
+      "stage": 0,
+      "label": "种子",
+      "worldScale": 0.123894,
+      "artistId": "plant-lavender-stage-0"
+    },
+    {
+      "id": "plant.lavender.1",
+      "source": "growth-flowers",
+      "rect": [
+        295,
+        653,
+        73,
+        92
+      ],
+      "anchor": [
+        0.4931506849315068,
+        0.967391304347826
+      ],
+      "category": "plant",
+      "speciesId": "lavender",
+      "stage": 1,
+      "label": "幼芽",
+      "worldScale": 0.123894,
+      "artistId": "plant-lavender-stage-1"
+    },
+    {
+      "id": "plant.lavender.2",
+      "source": "growth-flowers",
+      "rect": [
+        484,
+        615,
+        147,
+        131
+      ],
+      "anchor": [
+        0.4897959183673469,
+        0.9770992366412213
+      ],
+      "category": "plant",
+      "speciesId": "lavender",
+      "stage": 2,
+      "label": "银绿叶丛",
+      "worldScale": 0.123894,
+      "artistId": "plant-lavender-stage-2"
+    },
+    {
+      "id": "plant.lavender.3",
+      "source": "growth-flowers",
+      "rect": [
+        692,
+        565,
+        149,
+        181
+      ],
+      "anchor": [
+        0.4899328859060403,
+        0.9834254143646409
+      ],
+      "category": "plant",
+      "speciesId": "lavender",
+      "stage": 3,
+      "label": "紫色花穗初现",
+      "worldScale": 0.123894,
+      "artistId": "plant-lavender-stage-3"
+    },
+    {
+      "id": "plant.lavender.4",
+      "source": "growth-flowers",
+      "rect": [
+        911,
+        520,
+        203,
+        226
+      ],
+      "anchor": [
+        0.4729064039408867,
+        0.9867256637168141
+      ],
+      "category": "plant",
+      "speciesId": "lavender",
+      "stage": 4,
+      "label": "紫色花穗盛开",
+      "worldScale": 0.123894,
+      "artistId": "plant-lavender-stage-4"
+    },
+    {
+      "id": "plant.cosmos.0",
+      "source": "growth-flowers",
+      "rect": [
+        89,
+        921,
+        56,
+        33
+      ],
+      "anchor": [
+        0.48214285714285715,
+        0.9090909090909091
+      ],
+      "category": "plant",
+      "speciesId": "cosmos",
+      "stage": 0,
+      "label": "种子",
+      "worldScale": 0.137255,
+      "artistId": "plant-cosmos-stage-0"
+    },
+    {
+      "id": "plant.cosmos.1",
+      "source": "growth-flowers",
+      "rect": [
+        281,
+        889,
+        99,
+        65
+      ],
+      "anchor": [
+        0.5050505050505051,
+        0.9538461538461539
+      ],
+      "category": "plant",
+      "speciesId": "cosmos",
+      "stage": 1,
+      "label": "双叶幼苗",
+      "worldScale": 0.137255,
+      "artistId": "plant-cosmos-stage-1"
+    },
+    {
+      "id": "plant.cosmos.2",
+      "source": "growth-flowers",
+      "rect": [
+        467,
+        805,
+        171,
+        149
+      ],
+      "anchor": [
+        0.5029239766081871,
+        0.9798657718120806
+      ],
+      "category": "plant",
+      "speciesId": "cosmos",
+      "stage": 2,
+      "label": "细茎叶丛",
+      "worldScale": 0.137255,
+      "artistId": "plant-cosmos-stage-2"
+    },
+    {
+      "id": "plant.cosmos.3",
+      "source": "growth-flowers",
+      "rect": [
+        685,
+        783,
+        168,
+        171
+      ],
+      "anchor": [
+        0.4880952380952381,
+        0.9824561403508771
+      ],
+      "category": "plant",
+      "speciesId": "cosmos",
+      "stage": 3,
+      "label": "闭合粉色花苞",
+      "worldScale": 0.137255,
+      "artistId": "plant-cosmos-stage-3"
+    },
+    {
+      "id": "plant.cosmos.4",
+      "source": "growth-flowers",
+      "rect": [
+        896,
+        750,
+        221,
+        204
+      ],
+      "anchor": [
+        0.48868778280542985,
+        0.9852941176470589
+      ],
+      "category": "plant",
+      "speciesId": "cosmos",
+      "stage": 4,
+      "label": "粉花盛开",
+      "worldScale": 0.137255,
+      "artistId": "plant-cosmos-stage-4"
+    },
+    {
+      "id": "plant.buttercup.0",
+      "source": "growth-flowers",
+      "rect": [
+        87,
+        1126,
+        59,
+        40
+      ],
+      "anchor": [
+        0.5084745762711864,
+        0.95
+      ],
+      "category": "plant",
+      "speciesId": "buttercup",
+      "stage": 0,
+      "label": "种子",
+      "worldScale": 0.138614,
+      "artistId": "plant-buttercup-stage-0"
+    },
+    {
+      "id": "plant.buttercup.1",
+      "source": "growth-flowers",
+      "rect": [
+        286,
+        1091,
+        98,
+        75
+      ],
+      "anchor": [
+        0.4489795918367347,
+        0.9733333333333334
+      ],
+      "category": "plant",
+      "speciesId": "buttercup",
+      "stage": 1,
+      "label": "圆叶幼苗",
+      "worldScale": 0.138614,
+      "artistId": "plant-buttercup-stage-1"
+    },
+    {
+      "id": "plant.buttercup.2",
+      "source": "growth-flowers",
+      "rect": [
+        472,
+        1038,
+        169,
+        128
+      ],
+      "anchor": [
+        0.4970414201183432,
+        0.984375
+      ],
+      "category": "plant",
+      "speciesId": "buttercup",
+      "stage": 2,
+      "label": "分裂叶丛",
+      "worldScale": 0.138614,
+      "artistId": "plant-buttercup-stage-2"
+    },
+    {
+      "id": "plant.buttercup.3",
+      "source": "growth-flowers",
+      "rect": [
+        686,
+        1002,
+        161,
+        164
+      ],
+      "anchor": [
+        0.4658385093167702,
+        0.9878048780487805
+      ],
+      "category": "plant",
+      "speciesId": "buttercup",
+      "stage": 3,
+      "label": "闭合黄色花苞",
+      "worldScale": 0.138614,
+      "artistId": "plant-buttercup-stage-3"
+    },
+    {
+      "id": "plant.buttercup.4",
+      "source": "growth-flowers",
+      "rect": [
+        910,
+        965,
+        214,
+        202
+      ],
+      "anchor": [
+        0.4439252336448598,
+        0.9851485148514851
+      ],
+      "category": "plant",
+      "speciesId": "buttercup",
+      "stage": 4,
+      "label": "黄色五瓣花",
+      "worldScale": 0.138614,
+      "artistId": "plant-buttercup-stage-4"
+    },
+    {
+      "id": "plant.forget-me-not.0",
+      "source": "growth-flowers",
+      "rect": [
+        87,
+        1311,
+        60,
+        36
+      ],
+      "anchor": [
+        0.48333333333333334,
+        0.9166666666666666
+      ],
+      "category": "plant",
+      "speciesId": "forget-me-not",
+      "stage": 0,
+      "label": "种子",
+      "worldScale": 0.164706,
+      "artistId": "plant-forget-me-not-stage-0"
+    },
+    {
+      "id": "plant.forget-me-not.1",
+      "source": "growth-flowers",
+      "rect": [
+        288,
+        1284,
+        85,
+        63
+      ],
+      "anchor": [
+        0.49411764705882355,
+        0.9523809523809523
+      ],
+      "category": "plant",
+      "speciesId": "forget-me-not",
+      "stage": 1,
+      "label": "双叶幼苗",
+      "worldScale": 0.164706,
+      "artistId": "plant-forget-me-not-stage-1"
+    },
+    {
+      "id": "plant.forget-me-not.2",
+      "source": "growth-flowers",
+      "rect": [
+        475,
+        1245,
+        161,
+        104
+      ],
+      "anchor": [
+        0.45962732919254656,
+        0.9711538461538461
+      ],
+      "category": "plant",
+      "speciesId": "forget-me-not",
+      "stage": 2,
+      "label": "椭圆叶丛",
+      "worldScale": 0.164706,
+      "artistId": "plant-forget-me-not-stage-2"
+    },
+    {
+      "id": "plant.forget-me-not.3",
+      "source": "growth-flowers",
+      "rect": [
+        694,
+        1213,
+        153,
+        139
+      ],
+      "anchor": [
+        0.46405228758169936,
+        0.9784172661870504
+      ],
+      "category": "plant",
+      "speciesId": "forget-me-not",
+      "stage": 3,
+      "label": "蓝色花苞",
+      "worldScale": 0.164706,
+      "artistId": "plant-forget-me-not-stage-3"
+    },
+    {
+      "id": "plant.forget-me-not.4",
+      "source": "growth-flowers",
+      "rect": [
+        903,
+        1181,
+        208,
+        170
+      ],
+      "anchor": [
+        0.49038461538461536,
+        0.9882352941176471
+      ],
+      "category": "plant",
+      "speciesId": "forget-me-not",
+      "stage": 4,
+      "label": "蓝色小花簇",
+      "worldScale": 0.164706,
+      "artistId": "plant-forget-me-not-stage-4"
+    },
+    {
+      "id": "plant.fly-agaric.0",
+      "source": "growth-garden",
+      "rect": [
+        69,
+        213,
+        110,
+        53
+      ],
+      "anchor": [
+        0.4909090909090909,
+        0.9433962264150944
+      ],
+      "category": "plant",
+      "speciesId": "fly-agaric",
+      "stage": 0,
+      "label": "白色菌点",
+      "worldScale": 0.138614,
+      "artistId": "plant-fly-agaric-stage-0"
+    },
+    {
+      "id": "plant.fly-agaric.1",
+      "source": "growth-garden",
+      "rect": [
+        284,
+        195,
+        107,
+        71
+      ],
+      "anchor": [
+        0.514018691588785,
+        0.9577464788732394
+      ],
+      "category": "plant",
+      "speciesId": "fly-agaric",
+      "stage": 1,
+      "label": "菌蕾",
+      "worldScale": 0.138614,
+      "artistId": "plant-fly-agaric-stage-1"
+    },
+    {
+      "id": "plant.fly-agaric.2",
+      "source": "growth-garden",
+      "rect": [
+        507,
+        161,
+        104,
+        105
+      ],
+      "anchor": [
+        0.5288461538461539,
+        0.9714285714285714
+      ],
+      "category": "plant",
+      "speciesId": "fly-agaric",
+      "stage": 2,
+      "label": "小红菌盖",
+      "worldScale": 0.138614,
+      "artistId": "plant-fly-agaric-stage-2"
+    },
+    {
+      "id": "plant.fly-agaric.3",
+      "source": "growth-garden",
+      "rect": [
+        712,
+        109,
+        126,
+        154
+      ],
+      "anchor": [
+        0.5158730158730159,
+        0.987012987012987
+      ],
+      "category": "plant",
+      "speciesId": "fly-agaric",
+      "stage": 3,
+      "label": "菌盖渐展",
+      "worldScale": 0.138614,
+      "artistId": "plant-fly-agaric-stage-3"
+    },
+    {
+      "id": "plant.fly-agaric.4",
+      "source": "growth-garden",
+      "rect": [
+        908,
+        58,
+        206,
+        202
+      ],
+      "anchor": [
+        0.5242718446601942,
+        0.9851485148514851
+      ],
+      "category": "plant",
+      "speciesId": "fly-agaric",
+      "stage": 4,
+      "label": "红伞菌盖展开",
+      "worldScale": 0.138614,
+      "artistId": "plant-fly-agaric-stage-4"
+    },
+    {
+      "id": "plant.chanterelle.0",
+      "source": "growth-garden",
+      "rect": [
+        68,
+        430,
+        98,
+        46
+      ],
+      "anchor": [
+        0.5510204081632653,
+        0.9347826086956522
+      ],
+      "category": "plant",
+      "speciesId": "chanterelle",
+      "stage": 0,
+      "label": "金黄菌点",
+      "worldScale": 0.145078,
+      "artistId": "plant-chanterelle-stage-0"
+    },
+    {
+      "id": "plant.chanterelle.1",
+      "source": "growth-garden",
+      "rect": [
+        289,
+        410,
+        102,
+        69
+      ],
+      "anchor": [
+        0.49019607843137253,
+        0.9710144927536232
+      ],
+      "category": "plant",
+      "speciesId": "chanterelle",
+      "stage": 1,
+      "label": "小菌蕾",
+      "worldScale": 0.145078,
+      "artistId": "plant-chanterelle-stage-1"
+    },
+    {
+      "id": "plant.chanterelle.2",
+      "source": "growth-garden",
+      "rect": [
+        495,
+        367,
+        112,
+        109
+      ],
+      "anchor": [
+        0.5267857142857143,
+        0.9724770642201835
+      ],
+      "category": "plant",
+      "speciesId": "chanterelle",
+      "stage": 2,
+      "label": "短柄小菌盖",
+      "worldScale": 0.145078,
+      "artistId": "plant-chanterelle-stage-2"
+    },
+    {
+      "id": "plant.chanterelle.3",
+      "source": "growth-garden",
+      "rect": [
+        692,
+        308,
+        179,
+        168
+      ],
+      "anchor": [
+        0.46368715083798884,
+        0.9821428571428571
+      ],
+      "category": "plant",
+      "speciesId": "chanterelle",
+      "stage": 3,
+      "label": "菌盖变宽",
+      "worldScale": 0.145078,
+      "artistId": "plant-chanterelle-stage-3"
+    },
+    {
+      "id": "plant.chanterelle.4",
+      "source": "growth-garden",
+      "rect": [
+        915,
+        283,
+        214,
+        193
+      ],
+      "anchor": [
+        0.4719626168224299,
+        0.9844559585492227
+      ],
+      "category": "plant",
+      "speciesId": "chanterelle",
+      "stage": 4,
+      "label": "漏斗菌盖成簇",
+      "worldScale": 0.145078,
+      "artistId": "plant-chanterelle-stage-4"
+    },
+    {
+      "id": "plant.moss-clover.0",
+      "source": "growth-garden",
+      "rect": [
+        64,
+        639,
+        104,
+        47
+      ],
+      "anchor": [
+        0.5192307692307693,
+        0.9361702127659575
+      ],
+      "category": "plant",
+      "speciesId": "moss-clover",
+      "stage": 0,
+      "label": "少量苔点",
+      "worldScale": 0.088757,
+      "artistId": "plant-moss-clover-stage-0"
+    },
+    {
+      "id": "plant.moss-clover.1",
+      "source": "growth-garden",
+      "rect": [
+        251,
+        596,
+        140,
+        90
+      ],
+      "anchor": [
+        0.5,
+        0.9666666666666667
+      ],
+      "category": "plant",
+      "speciesId": "moss-clover",
+      "stage": 1,
+      "label": "小苔斑与单株",
+      "worldScale": 0.088757,
+      "artistId": "plant-moss-clover-stage-1"
+    },
+    {
+      "id": "plant.moss-clover.2",
+      "source": "growth-garden",
+      "rect": [
+        453,
+        563,
+        188,
+        123
+      ],
+      "anchor": [
+        0.4946808510638298,
+        0.975609756097561
+      ],
+      "category": "plant",
+      "speciesId": "moss-clover",
+      "stage": 2,
+      "label": "苔片扩展",
+      "worldScale": 0.088757,
+      "artistId": "plant-moss-clover-stage-2"
+    },
+    {
+      "id": "plant.moss-clover.3",
+      "source": "growth-garden",
+      "rect": [
+        675,
+        532,
+        202,
+        154
+      ],
+      "anchor": [
+        0.504950495049505,
+        0.9805194805194806
+      ],
+      "category": "plant",
+      "speciesId": "moss-clover",
+      "stage": 3,
+      "label": "浓密绿毯",
+      "worldScale": 0.088757,
+      "artistId": "plant-moss-clover-stage-3"
+    },
+    {
+      "id": "plant.moss-clover.4",
+      "source": "growth-garden",
+      "rect": [
+        899,
+        516,
+        226,
+        169
+      ],
+      "anchor": [
+        0.4469026548672566,
+        0.9881656804733728
+      ],
+      "category": "plant",
+      "speciesId": "moss-clover",
+      "stage": 4,
+      "label": "绿毯与白色草花",
+      "worldScale": 0.088757,
+      "artistId": "plant-moss-clover-stage-4"
+    },
+    {
+      "id": "plant.pumpkin.0",
+      "source": "growth-garden",
+      "rect": [
+        72,
+        835,
+        86,
+        62
+      ],
+      "anchor": [
+        0.46511627906976744,
+        0.9516129032258065
+      ],
+      "category": "plant",
+      "speciesId": "pumpkin",
+      "stage": 0,
+      "label": "瓜籽萌动",
+      "worldScale": 0.148936,
+      "artistId": "plant-pumpkin-stage-0"
+    },
+    {
+      "id": "plant.pumpkin.1",
+      "source": "growth-garden",
+      "rect": [
+        248,
+        789,
+        144,
+        107
+      ],
+      "anchor": [
+        0.5347222222222222,
+        0.9813084112149533
+      ],
+      "category": "plant",
+      "speciesId": "pumpkin",
+      "stage": 1,
+      "label": "双叶幼苗",
+      "worldScale": 0.148936,
+      "artistId": "plant-pumpkin-stage-1"
+    },
+    {
+      "id": "plant.pumpkin.2",
+      "source": "growth-garden",
+      "rect": [
+        424,
+        757,
+        230,
+        138
+      ],
+      "anchor": [
+        0.40869565217391307,
+        0.9855072463768116
+      ],
+      "category": "plant",
+      "speciesId": "pumpkin",
+      "stage": 2,
+      "label": "宽叶藤蔓",
+      "worldScale": 0.148936,
+      "artistId": "plant-pumpkin-stage-2"
+    },
+    {
+      "id": "plant.pumpkin.3",
+      "source": "growth-garden",
+      "rect": [
+        659,
+        739,
+        226,
+        156
+      ],
+      "anchor": [
+        0.47345132743362833,
+        0.9807692307692307
+      ],
+      "category": "plant",
+      "speciesId": "pumpkin",
+      "stage": 3,
+      "label": "黄花与小青瓜",
+      "worldScale": 0.148936,
+      "artistId": "plant-pumpkin-stage-3"
+    },
+    {
+      "id": "plant.pumpkin.4",
+      "source": "growth-garden",
+      "rect": [
+        896,
+        708,
+        236,
+        188
+      ],
+      "anchor": [
+        0.461864406779661,
+        0.9893617021276596
+      ],
+      "category": "plant",
+      "speciesId": "pumpkin",
+      "stage": 4,
+      "label": "橙色南瓜成熟",
+      "worldScale": 0.148936,
+      "artistId": "plant-pumpkin-stage-4"
+    },
+    {
+      "id": "plant.strawberry.0",
+      "source": "growth-garden",
+      "rect": [
+        69,
+        1041,
+        87,
+        69
+      ],
+      "anchor": [
+        0.5287356321839081,
+        0.9565217391304348
+      ],
+      "category": "plant",
+      "speciesId": "strawberry",
+      "stage": 0,
+      "label": "根芽",
+      "worldScale": 0.149733,
+      "artistId": "plant-strawberry-stage-0"
+    },
+    {
+      "id": "plant.strawberry.1",
+      "source": "growth-garden",
+      "rect": [
+        258,
+        1001,
+        122,
+        114
+      ],
+      "anchor": [
+        0.45081967213114754,
+        0.9824561403508771
+      ],
+      "category": "plant",
+      "speciesId": "strawberry",
+      "stage": 1,
+      "label": "三出叶幼苗",
+      "worldScale": 0.149733,
+      "artistId": "plant-strawberry-stage-1"
+    },
+    {
+      "id": "plant.strawberry.2",
+      "source": "growth-garden",
+      "rect": [
+        445,
+        966,
+        203,
+        149
+      ],
+      "anchor": [
+        0.43349753694581283,
+        0.9798657718120806
+      ],
+      "category": "plant",
+      "speciesId": "strawberry",
+      "stage": 2,
+      "label": "多层叶丛",
+      "worldScale": 0.149733,
+      "artistId": "plant-strawberry-stage-2"
+    },
+    {
+      "id": "plant.strawberry.3",
+      "source": "growth-garden",
+      "rect": [
+        667,
+        936,
+        215,
+        180
+      ],
+      "anchor": [
+        0.46511627906976744,
+        0.9833333333333333
+      ],
+      "category": "plant",
+      "speciesId": "strawberry",
+      "stage": 3,
+      "label": "白花与青果",
+      "worldScale": 0.149733,
+      "artistId": "plant-strawberry-stage-3"
+    },
+    {
+      "id": "plant.strawberry.4",
+      "source": "growth-garden",
+      "rect": [
+        900,
+        929,
+        228,
+        187
+      ],
+      "anchor": [
+        0.4824561403508772,
+        0.983957219251337
+      ],
+      "category": "plant",
+      "speciesId": "strawberry",
+      "stage": 4,
+      "label": "红色草莓成熟",
+      "worldScale": 0.149733,
+      "artistId": "plant-strawberry-stage-4"
+    },
+    {
+      "id": "plant.carrot.0",
+      "source": "growth-garden",
+      "rect": [
+        63,
+        1291,
+        95,
+        47
+      ],
+      "anchor": [
+        0.5052631578947369,
+        0.9361702127659575
+      ],
+      "category": "plant",
+      "speciesId": "carrot",
+      "stage": 0,
+      "label": "种子",
+      "worldScale": 0.123894,
+      "artistId": "plant-carrot-stage-0"
+    },
+    {
+      "id": "plant.carrot.1",
+      "source": "growth-garden",
+      "rect": [
+        260,
+        1241,
+        124,
+        97
+      ],
+      "anchor": [
+        0.4838709677419355,
+        0.9690721649484536
+      ],
+      "category": "plant",
+      "speciesId": "carrot",
+      "stage": 1,
+      "label": "细叶幼苗",
+      "worldScale": 0.123894,
+      "artistId": "plant-carrot-stage-1"
+    },
+    {
+      "id": "plant.carrot.2",
+      "source": "growth-garden",
+      "rect": [
+        467,
+        1204,
+        142,
+        134
+      ],
+      "anchor": [
+        0.4788732394366197,
+        0.9850746268656716
+      ],
+      "category": "plant",
+      "speciesId": "carrot",
+      "stage": 2,
+      "label": "羽状叶初长",
+      "worldScale": 0.123894,
+      "artistId": "plant-carrot-stage-2"
+    },
+    {
+      "id": "plant.carrot.3",
+      "source": "growth-garden",
+      "rect": [
+        677,
+        1149,
+        194,
+        191
+      ],
+      "anchor": [
+        0.5,
+        0.9895287958115183
+      ],
+      "category": "plant",
+      "speciesId": "carrot",
+      "stage": 3,
+      "label": "叶冠与小根肩",
+      "worldScale": 0.123894,
+      "artistId": "plant-carrot-stage-3"
+    },
+    {
+      "id": "plant.carrot.4",
+      "source": "growth-garden",
+      "rect": [
+        902,
+        1123,
+        221,
+        226
+      ],
+      "anchor": [
+        0.4841628959276018,
+        0.9867256637168141
+      ],
+      "category": "plant",
+      "speciesId": "carrot",
+      "stage": 4,
+      "label": "成熟叶冠与根肩",
+      "worldScale": 0.123894,
+      "artistId": "plant-carrot-stage-4"
+    }
+  ],
+  "missing": [
+    "Compost basket, windmill and focus bench are temporary original procedural props."
+  ],
+  "inspection": {
+    "source": "atlas.json (artist final, 2026-10-18)",
+    "sourcePNGsUnmodified": true,
+    "growthSpecies": 24,
+    "growthSprites": 120,
+    "alphaVerified": true,
+    "rectBoundsVerified": true,
+    "anchors": "artist root/foot coordinates normalized against each crop",
+    "scale": "one constant source-pixel scale shared by every stage of a species",
+    "decorations": "approved mature-tree mapping preserved"
+  },
+  "plants": [
+    {
+      "id": "oak",
+      "name": "橡树",
+      "category": "trees",
+      "stageLabels": [
+        "橡实",
+        "双叶萌芽",
+        "木质幼苗",
+        "分枝小树",
+        "圆冠成树"
+      ],
+      "worldScale": 0.293023
+    },
+    {
+      "id": "birch",
+      "name": "白桦",
+      "category": "trees",
+      "stageLabels": [
+        "种子",
+        "双叶萌芽",
+        "细干幼苗",
+        "白皮幼树",
+        "白桦成树"
+      ],
+      "worldScale": 0.311881
+    },
+    {
+      "id": "pine",
+      "name": "松树",
+      "category": "trees",
+      "stageLabels": [
+        "松籽萌动",
+        "针叶幼芽",
+        "分层幼苗",
+        "锥形幼树",
+        "层叠松冠"
+      ],
+      "worldScale": 0.29717
+    },
+    {
+      "id": "cherry",
+      "name": "樱花树",
+      "category": "trees",
+      "stageLabels": [
+        "种子",
+        "双叶萌芽",
+        "绿叶幼苗",
+        "粉色花苞",
+        "盛开樱花"
+      ],
+      "worldScale": 0.336898
+    },
+    {
+      "id": "apple",
+      "name": "苹果树",
+      "category": "trees",
+      "stageLabels": [
+        "种子",
+        "双叶萌芽",
+        "绿叶幼树",
+        "白花初开",
+        "红苹果成熟"
+      ],
+      "worldScale": 0.35
+    },
+    {
+      "id": "willow",
+      "name": "垂柳",
+      "category": "trees",
+      "stageLabels": [
+        "根芽",
+        "窄叶嫩苗",
+        "分枝幼树",
+        "枝条下垂",
+        "垂柳成树"
+      ],
+      "worldScale": 0.331579
+    },
+    {
+      "id": "blueberry",
+      "name": "蓝莓",
+      "category": "shrubs",
+      "stageLabels": [
+        "种子萌动",
+        "双叶幼苗",
+        "分枝小灌木",
+        "开花青果",
+        "蓝莓成熟"
+      ],
+      "worldScale": 0.159204
+    },
+    {
+      "id": "raspberry",
+      "name": "覆盆子",
+      "category": "shrubs",
+      "stageLabels": [
+        "根芽",
+        "嫩茎长叶",
+        "多枝幼株",
+        "开花青果",
+        "红果成熟"
+      ],
+      "worldScale": 0.148837
+    },
+    {
+      "id": "hydrangea",
+      "name": "绣球",
+      "category": "shrubs",
+      "stageLabels": [
+        "根芽",
+        "宽叶幼苗",
+        "多层叶丛",
+        "紧密花球",
+        "蓝紫花球盛开"
+      ],
+      "worldScale": 0.161616
+    },
+    {
+      "id": "fern",
+      "name": "蕨类",
+      "category": "shrubs",
+      "stageLabels": [
+        "贴地卷芽",
+        "卷曲嫩叶",
+        "叶片初展",
+        "羽叶展开",
+        "完整蕨叶丛"
+      ],
+      "worldScale": 0.160804
+    },
+    {
+      "id": "cattail",
+      "name": "香蒲",
+      "category": "shrubs",
+      "stageLabels": [
+        "根茎萌芽",
+        "细叶幼苗",
+        "长叶成束",
+        "幼嫩绿穗",
+        "棕色花穗"
+      ],
+      "worldScale": 0.177273
+    },
+    {
+      "id": "waterlily",
+      "name": "睡莲",
+      "category": "shrubs",
+      "stageLabels": [
+        "水生嫩芽",
+        "单片小浮叶",
+        "多片浮叶",
+        "粉色花苞",
+        "睡莲盛开"
+      ],
+      "worldScale": 0.144
+    },
+    {
+      "id": "sunflower",
+      "name": "向日葵",
+      "category": "flowers",
+      "stageLabels": [
+        "葵花籽",
+        "双叶幼苗",
+        "宽叶高茎",
+        "闭合花苞",
+        "金色花盘开放"
+      ],
+      "worldScale": 0.111111
+    },
+    {
+      "id": "daisy",
+      "name": "雏菊",
+      "category": "flowers",
+      "stageLabels": [
+        "种子",
+        "双叶幼苗",
+        "低矮叶丛",
+        "绿色花苞",
+        "白瓣黄心花"
+      ],
+      "worldScale": 0.159091
+    },
+    {
+      "id": "lavender",
+      "name": "薰衣草",
+      "category": "flowers",
+      "stageLabels": [
+        "种子",
+        "幼芽",
+        "银绿叶丛",
+        "紫色花穗初现",
+        "紫色花穗盛开"
+      ],
+      "worldScale": 0.123894
+    },
+    {
+      "id": "cosmos",
+      "name": "波斯菊",
+      "category": "flowers",
+      "stageLabels": [
+        "种子",
+        "双叶幼苗",
+        "细茎叶丛",
+        "闭合粉色花苞",
+        "粉花盛开"
+      ],
+      "worldScale": 0.137255
+    },
+    {
+      "id": "buttercup",
+      "name": "毛茛",
+      "category": "flowers",
+      "stageLabels": [
+        "种子",
+        "圆叶幼苗",
+        "分裂叶丛",
+        "闭合黄色花苞",
+        "黄色五瓣花"
+      ],
+      "worldScale": 0.138614
+    },
+    {
+      "id": "forget-me-not",
+      "name": "勿忘草",
+      "category": "flowers",
+      "stageLabels": [
+        "种子",
+        "双叶幼苗",
+        "椭圆叶丛",
+        "蓝色花苞",
+        "蓝色小花簇"
+      ],
+      "worldScale": 0.164706
+    },
+    {
+      "id": "fly-agaric",
+      "name": "红伞菇",
+      "category": "garden",
+      "stageLabels": [
+        "白色菌点",
+        "菌蕾",
+        "小红菌盖",
+        "菌盖渐展",
+        "红伞菌盖展开"
+      ],
+      "worldScale": 0.138614
+    },
+    {
+      "id": "chanterelle",
+      "name": "鸡油菌",
+      "category": "garden",
+      "stageLabels": [
+        "金黄菌点",
+        "小菌蕾",
+        "短柄小菌盖",
+        "菌盖变宽",
+        "漏斗菌盖成簇"
+      ],
+      "worldScale": 0.145078
+    },
+    {
+      "id": "moss-clover",
+      "name": "苔藓三叶草",
+      "category": "garden",
+      "stageLabels": [
+        "少量苔点",
+        "小苔斑与单株",
+        "苔片扩展",
+        "浓密绿毯",
+        "绿毯与白色草花"
+      ],
+      "worldScale": 0.088757
+    },
+    {
+      "id": "pumpkin",
+      "name": "南瓜",
+      "category": "garden",
+      "stageLabels": [
+        "瓜籽萌动",
+        "双叶幼苗",
+        "宽叶藤蔓",
+        "黄花与小青瓜",
+        "橙色南瓜成熟"
+      ],
+      "worldScale": 0.148936
+    },
+    {
+      "id": "strawberry",
+      "name": "草莓",
+      "category": "garden",
+      "stageLabels": [
+        "根芽",
+        "三出叶幼苗",
+        "多层叶丛",
+        "白花与青果",
+        "红色草莓成熟"
+      ],
+      "worldScale": 0.149733
+    },
+    {
+      "id": "carrot",
+      "name": "胡萝卜",
+      "category": "garden",
+      "stageLabels": [
+        "种子",
+        "细叶幼苗",
+        "羽状叶初长",
+        "叶冠与小根肩",
+        "成熟叶冠与根肩"
+      ],
+      "worldScale": 0.123894
+    }
+  ]
+}

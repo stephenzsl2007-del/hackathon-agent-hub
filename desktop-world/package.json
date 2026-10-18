@@ -1,0 +1,19 @@
+{
+  "name": "breathe-island-desktop-world",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A small pixel world for your desktop",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "start": "node server.cjs",
+    "desktop": "electron .",
+    "package:mac": "node desktop/package.cjs",
+    "check": "node --check server.cjs && node --check desktop/main.cjs && node --check desktop/preload.cjs"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "electron": "^41.0.0"
+  }
+}

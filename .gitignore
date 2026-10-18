@@ -1,0 +1,41 @@
+# Dependencies and generated output
+node_modules/
+dist/
+build/
+out/
+release/
+coverage/
+*.app/
+*.dmg
+*.pkg
+*.exe
+*.msi
+*.asar
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+.npmrc.local
+
+# Caches, logs and machine-specific files
+.DS_Store
+._*
+.cache/
+.pnpm-store/
+*.log
+*.tsbuildinfo
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Machine-specific output from the native trash smoke test
+/desktop-world/tests/native-trash-verification.json
+
+# Python asset inspection caches
+__pycache__/
+*.pyc

@@ -1,0 +1,68 @@
+息屿 · 像素美术交付说明
+2026-10-18
+
+视觉方向
+温暖的农场生活像素风。三分之四俯视，左上光源，草绿、湖蓝、奶油黄和暖棕色为主。
+生成方式：内置 image_gen。未通过脚本重绘、抠图、缩放或改写 PNG 像素。
+
+成品与路径
+运行素材：../public/assets/pixel-world/
+预览入口：../public/art-preview.html
+在项目现有服务器上打开 /art-preview.html，可选择植物、拖动五阶段、播放生长，以及检查动物和岛屿。
+
+1. island-scene.png：完整小岛主视觉，用于展示与美术方向参考。
+2. islands-atlas.png：草甸、林地、樱花水池、菜园四座独立透明岛屿。
+3. animals-atlas.png：24组动物素材；含6款猫、6款犬、6款鸟、红/灰松鼠、花栗鼠、兔子、刺猬及黄蓝蝴蝶组合。
+   蝴蝶格有两只个体；这套是24组素材，不是24个独立物种，也不是动作序列。
+4. plants-mature-atlas.png：24种成熟植物风格参考，独立于下述生长图集。
+5. growth-trees-v2.png：橡树、白桦、松树、樱花、苹果树、垂柳，各5阶段。
+6. growth-shrubs-v2.png：蓝莓、覆盆子、绣球、蕨类、香蒲、睡莲，各5阶段。
+7. growth-flowers.png：向日葵、雏菊、薰衣草、波斯菊、毛茛、勿忘草，各5阶段。
+8. growth-garden.png：红伞菇、鸡油菌、苔藓三叶草、南瓜、草莓、胡萝卜，各5阶段。
+
+生长表现
+24种植物，每种5个真实结构变化的静态关键状态，共120个生长状态。
+树木表现枝干与树冠增长，花卉表现叶丛、花苞和开放；果蔬表现开花、青果和成熟。
+蕨类从卷芽逐渐展开；菌菇从菌点/菌蕾到菌盖展开。苔藓只增长植物覆盖层，石头不生长。
+胡萝卜保持种在地里的状态，成熟仅露出较明显的根肩。
+stage为0..4，中文阶段语义见 atlas.json 的 plants.*.stageLabels。
+
+工程接入
+atlas.json 使用经过实际图像检查的矩形，不能按提示词中的5×6或6×4机械均分。
+images记录源文件及真实尺寸；sprites记录image、rect=[x,y,w,h]和anchor=[x,y]。
+anchor为相对裁切矩形左上角的像素坐标。根部/脚底落到世界坐标的位置应保持不变。
+plants.*.stages给出五个sprite ID；animals和islands给出各自素材ID。
+sprite-assets.js 提供 loadPixelArt、drawSprite、plantSprite 和 growthStage。
+
+调用示例
+import { loadPixelArt, growthStage } from './assets/pixel-world/sprite-assets.js';
+const art = await loadPixelArt();
+const id = art.plantSprite('sunflower', growthStage(plant.growth));
+art.drawSprite(ctx, id, plant.x, plant.y, { scale: 0.25 });
+
+同一种植物的五阶段必须使用相同scale，不能每一帧单独撑满目标框。
+Canvas关闭imageSmoothingEnabled；CSS使用image-rendering:pixelated。
+预览页同时展示五个阶段，采用共同根部基线和相同缩放比例。
+素材为高分辨率像素风插画，实际地图内的显示尺寸与像素密度由渲染器调校。
+推荐先在640×400的逻辑画布中试用动物20–40像素高、花草16–36像素高、树木70–110像素高。
+整株绘制，当前没有拆分树冠遮挡层。行走区域/海岸碰撞请由工程维护，不能直接将图像alpha作为地图规则。
+仅静态生长状态经过整理；没有把不同物种声明为动作动画，也没有宣称实现了动物行走帧。
+
+原始图与边缘说明
+图集有真实alpha透明通道。生成预览可能显示alpha为0像素下的彩色RGB底色，实际合成以alpha为准。
+裁切去掉极低透明度残影，原始PNG仍完整保留。根部锚点为主体底部估计，可按地图美术进一步微调。
+完整主视觉里的最上方松树触及画幅；独立岛屿图集用于需要完整透明地形的场景。
+初版生长树木/灌木图保留在 drafts/，同时保留public中的旧路径以兼容现有工程引用。
+本次最终 atlas.json 只引用间距修正版；工程侧已有的runtime-manifest.json需据此适配。
+
+协作交付
+架构接入约定：INTEGRATION_REQUEST.txt
+初始图集实际切图检查：base-regions.json
+清单生成与只读图像检查：build-atlas.py
+素材已提供独立适配器与预览页；业务程序的世界状态、生长计时与具体场景布置由工程agent接入。
+
+完整生成提示词
+base-prompts.json：场景、岛屿、成熟植物和动物的生成提示词。
+growth-prompts.json：四组五阶段生长图集的生成提示词。
+shrubs-spacing-prompt.txt：灌木/湿地图集间距修正。
+trees-spacing-prompt.txt：树木图集间距修正。

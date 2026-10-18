@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f2e7">
+  <title>息屿 · 生长图鉴</title>
+  <style>
+    :root{color-scheme:light;font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:#394c3b;background:#f5f2e7;font-synthesis:none;--muted:#7f8b77;--line:#dce1cf;--green:#59764b;--paper:#fffdf4;--preview:#f0ede2;--preview-dot:#dfddcf;--ground:#82936a3d}
+    *{box-sizing:border-box}body{margin:0}button,select,input{font:inherit}button,select{color:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.45}button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #b0c67b;outline-offset:4px}[hidden]{display:none!important}button{border:0}main{width:min(1260px,calc(100% - 64px));margin:0 auto;padding-bottom:44px}.masthead{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:34px 0 29px;border-bottom:1px solid var(--line)}.brand-line{display:flex;align-items:center;gap:13px}.mark{width:36px;height:36px;image-rendering:pixelated}.eyebrow{margin:0 0 8px;font:10px ui-monospace,monospace;letter-spacing:2.3px;color:#8d987e}h1{margin:0;font-size:25px;font-weight:600;letter-spacing:2px}.intro{margin:0;font-size:12px;line-height:1.9;letter-spacing:1px;color:var(--muted);text-align:right}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:23px 0}.tabs,.backgrounds{display:flex;gap:5px;align-items:center}.tab{padding:10px 16px;background:transparent;font-size:12px;border-radius:7px;color:#8a9580}.tab[aria-pressed=true]{background:#e1e8d2;color:#49623d;font-weight:600}.background-label{font-size:11px;color:var(--muted);margin-right:7px}.swatch{width:28px;height:28px;border-radius:50%;padding:5px;background:transparent;display:grid;place-items:center}.swatch:before{content:"";width:17px;height:17px;border-radius:50%;border:1px solid #34443219;background:var(--swatch)}.swatch[aria-pressed=true]{box-shadow:0 0 0 1px #8d9e79}.filter-row{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:17px;flex-wrap:wrap}.categories{display:flex;gap:7px;flex-wrap:wrap}.category{font-size:11px;background:transparent;padding:8px 11px;border-radius:5px;color:#86917c}.category[aria-pressed=true]{background:#edf0e2;color:#5b7448}.pick-label{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:10px}.pick-label select{min-width:175px;padding:9px 32px 9px 12px;background:var(--paper);border:1px solid var(--line);border-radius:6px;font-size:12px}.hero{display:grid;grid-template-columns:minmax(0,1fr) 286px;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden}.stage-surface{background-color:var(--preview);background-image:radial-gradient(var(--preview-dot) .75px,transparent .75px);background-size:12px 12px;position:relative;overflow:hidden}.hero-surface{min-height:340px}.hero canvas{display:block;width:100%;height:340px;image-rendering:pixelated}.surface-badge{position:absolute;top:17px;left:19px;font:9px ui-monospace,monospace;letter-spacing:1.6px;color:#68805c;background:#fffef0d9;padding:7px 9px;border:1px solid #ffffff70;border-radius:4px}.stage-info{padding:36px 27px 27px;display:flex;flex-direction:column;justify-content:center;border-left:1px solid var(--line)}.plant-category{font-size:10px;letter-spacing:2px;color:#97a185;margin:0 0 12px}.stage-info h2{font-size:27px;font-weight:500;letter-spacing:3px;margin:0 0 11px}.stage-label{font-size:12px;color:#7a8b68;margin:0 0 31px;min-height:20px}.stage-number{font:11px ui-monospace,monospace;letter-spacing:1px;color:#94a083;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.stage-number strong{color:#5b7447;font-weight:500}.slider{width:100%;margin:0;accent-color:#70915a;cursor:pointer}.tick-labels{display:flex;justify-content:space-between;font:10px ui-monospace,monospace;color:#a3ac95;margin-top:8px}.play-button{display:flex;align-items:center;justify-content:center;gap:10px;background:#5f7b50;color:#fffeef;border:1px solid #759061;border-radius:7px;padding:12px 16px;margin-top:25px;font-size:12px;letter-spacing:1px;width:100%}.play-icon{font-size:10px}.motion-note{font-size:10px;line-height:1.7;color:#939d87;margin:13px 0 0}.section-caption{display:flex;align-items:center;justify-content:space-between;margin:27px 0 13px;gap:12px}.section-caption h3{font-size:12px;font-weight:500;letter-spacing:2px;margin:0}.section-caption p{font-size:10px;color:#95a087;margin:0}.comparison{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px}.stage-card{border:1px solid var(--line);border-radius:9px;padding:0;overflow:hidden;text-align:left;background:var(--paper);color:inherit;min-width:0}.stage-card[aria-pressed=true]{border-color:#829b67;box-shadow:0 0 0 1px #829b67}.stage-card canvas{width:100%;height:190px;display:block;image-rendering:pixelated}.card-caption{display:flex;align-items:flex-start;gap:9px;padding:12px 12px 13px;min-height:46px}.card-caption span{font:10px ui-monospace,monospace;color:#a4ac95;padding-top:1px}.card-caption strong{font-size:11px;font-weight:500;line-height:1.5;color:#6b7e57}.collection-select{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 17px}.collection-pick{padding:8px 11px;border:1px solid var(--line);border-radius:5px;background:#fffdf1;font-size:11px;color:#829171}.collection-pick[aria-pressed=true]{border-color:#93a77d;background:#e8eedb;color:#4e6a3f}.collection-hero{display:grid;grid-template-columns:minmax(0,1fr) 286px;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden}.collection-hero canvas{width:100%;height:420px;display:block;image-rendering:pixelated}.collection-info{padding:35px 27px;border-left:1px solid var(--line);display:flex;flex-direction:column;justify-content:center}.collection-info h2{font-weight:500;font-size:25px;letter-spacing:2px;margin:0 0 14px}.collection-info p{font-size:12px;color:#8c977e;line-height:1.9;margin:0}.collection-index{font:10px ui-monospace,monospace;letter-spacing:2px;color:#9fa88e;margin-bottom:15px}.footer-note{display:flex;justify-content:space-between;gap:20px;font-size:10px;color:#99a18d;line-height:1.8;margin:23px 0 0}.footer-note span:last-child{font-family:ui-monospace,monospace;letter-spacing:1px}.load-state{min-height:420px;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;color:#80926d}.load-flower{font-size:40px;color:#91a871;margin-bottom:12px}.load-state p{font-size:12px;letter-spacing:1px;line-height:1.8;margin:0}.retry{margin-top:18px;background:#e2e9d4;border:1px solid #cfdabd;padding:10px 20px;border-radius:6px;font-size:12px}.status{min-height:18px;font-size:10px;color:#a0a992;margin-top:12px;text-align:right}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.theme-grass{--preview:#98b96a;--preview-dot:#87a859;--ground:#496a3e50}.theme-dark{--preview:#263c3b;--preview-dot:#314b47;--ground:#d9e6ae35}.theme-dark .surface-badge{background:#e8eed2d9}.theme-grass .surface-badge{background:#fbffedd9}
+    @media(max-width:900px){main{width:min(100% - 36px,1260px)}.hero,.collection-hero{grid-template-columns:minmax(0,1fr) 240px}.stage-info,.collection-info{padding:25px 20px}.comparison{gap:7px}.stage-card canvas{height:155px}.card-caption{padding:11px 8px;gap:5px}.card-caption strong{font-size:10px}.intro{font-size:10px}}
+    @media(max-width:650px){main{width:calc(100% - 28px)}.masthead{padding:24px 0 20px}.intro{display:none}h1{font-size:21px}.mark{width:30px}.eyebrow{font-size:8px}.toolbar{padding:17px 0;gap:8px}.tab{padding:9px 10px;font-size:11px}.background-label{display:none}.backgrounds{gap:3px}.swatch{width:25px;height:25px}.filter-row{gap:11px}.pick-label{width:100%;justify-content:space-between}.pick-label select{flex:1;max-width:260px}.categories{gap:2px}.category{padding:7px 8px;font-size:10px}.hero,.collection-hero{grid-template-columns:1fr}.hero-surface{min-height:280px}.hero canvas{height:280px}.stage-info{border-left:0;border-top:1px solid var(--line);padding:20px}.plant-category{margin-bottom:7px}.stage-info h2{font-size:23px}.stage-label{margin-bottom:20px}.play-button{margin-top:19px}.comparison{grid-template-columns:repeat(5,146px);overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x proximity}.stage-card{scroll-snap-align:center}.stage-card canvas{height:155px}.section-caption p{font-size:9px}.collection-info{border-left:0;border-top:1px solid var(--line);padding:21px}.collection-hero canvas{height:320px}.collection-pick{padding:8px 9px;font-size:10px}.footer-note span:last-child{display:none}.footer-note{font-size:9px}.collection-info h2{font-size:23px}}
+    @media(min-width:651px) and (max-width:900px){.hero-surface{min-height:250px}.hero canvas{height:250px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <main>
+    <header class="masthead">
+      <div class="brand-line">
+        <svg class="mark" viewBox="0 0 32 32" aria-hidden="true" shape-rendering="crispEdges"><path fill="#d1dcad" d="M3 23h26v4H3zM7 27h18v3H7z"/><path fill="#64804f" d="M15 10h3v14h-3zM7 9h8v4H7zM10 13h7v3h-7zM18 6h8v5h-8zM17 11h6v4h-6z"/><path fill="#a8bc77" d="M8 6h5v3H8zM21 3h4v3h-4z"/></svg>
+        <div><p class="eyebrow">LITTLE WORLD · FIELD NOTES</p><h1>息屿 · 生长图鉴</h1></div>
+      </div>
+      <p class="intro">从一粒种子，<br>看见一座小岛慢慢长大。</p>
+    </header>
+    <div class="toolbar">
+      <nav class="tabs" aria-label="图鉴种类">
+        <button class="tab" type="button" data-mode="plants" aria-pressed="true">植物成长</button>
+        <button class="tab" type="button" data-mode="animals" aria-pressed="false">小小生灵</button>
+        <button class="tab" type="button" data-mode="islands" aria-pressed="false">四座小岛</button>
+      </nav>
+      <div class="backgrounds" role="group" aria-label="预览背景">
+        <span class="background-label">换一片背景</span>
+        <button type="button" class="swatch" data-theme="light" aria-label="浅色背景" aria-pressed="true" title="浅色背景" style="--swatch:#f0ede2"></button>
+        <button type="button" class="swatch" data-theme="grass" aria-label="草地背景" aria-pressed="false" title="草地背景" style="--swatch:#98b96a"></button>
+        <button type="button" class="swatch" data-theme="dark" aria-label="深色背景" aria-pressed="false" title="深色背景" style="--swatch:#263c3b"></button>
+      </div>
+    </div>
+    <div id="load-state" class="load-state" role="status"><span class="load-flower" aria-hidden="true">✿</span><p id="load-message">翻开小岛的生长笔记…</p><button class="retry" id="retry" type="button" hidden>再翻一次</button></div>
+    <div id="gallery" hidden>
+      <section id="plants-panel" aria-label="植物生长图鉴">
+        <div class="filter-row"><div class="categories" id="categories" role="group" aria-label="植物分类"></div><label class="pick-label" for="plant-select">挑一株植物<select id="plant-select"></select></label></div>
+        <div class="hero">
+          <div class="stage-surface hero-surface"><span class="surface-badge" id="plant-badge">GROWING · 01 / 05</span><canvas id="plant-canvas" role="img" aria-label="植物当前生长阶段"></canvas></div>
+          <div class="stage-info">
+            <p class="plant-category" id="plant-category"></p><h2 id="plant-name"></h2><p class="stage-label" id="stage-label"></p>
+            <label class="stage-number" for="stage-range"><span>生长进度</span><strong id="stage-count">01 / 05</strong></label>
+            <input id="stage-range" class="slider" type="range" min="0" max="4" step="1" value="0" aria-label="生长阶段">
+            <div class="tick-labels" aria-hidden="true"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span></div>
+            <button id="play" class="play-button" type="button" aria-pressed="false"><span class="play-icon" aria-hidden="true">▶</span><span id="play-label">看它慢慢长大</span></button>
+            <p id="motion-note" class="motion-note" hidden>已遵循「减少动态效果」设置，可用滑块逐步查看。</p>
+          </div>
+        </div>
+        <div class="section-caption"><h3>五个生长时刻</h3><p>从左到右，留住每一次变化</p></div>
+        <div id="comparison" class="comparison" aria-label="五阶段对比"></div>
+      </section>
+      <section id="collection-panel" hidden aria-label="生灵与小岛预览">
+        <div id="collection-select" class="collection-select" role="group" aria-label="选择素材"></div>
+        <div class="collection-hero"><div class="stage-surface"><span class="surface-badge" id="collection-badge"></span><canvas id="collection-canvas" role="img" aria-label="选中的小生灵或岛屿"></canvas></div><div class="collection-info"><span class="collection-index" id="collection-index"></span><h2 id="collection-name"></h2><p id="collection-description"></p></div></div>
+      </section>
+      <div class="footer-note"><span>每一株小芽，都有自己的生长节奏。</span><span>XI YU · A SMALL PLACE TO GROW</span></div>
+      <div class="status" id="selection-status" role="status" aria-live="polite"></div>
+    </div>
+  </main>
+  <script>
+  (() => {
+    'use strict';
+    const $ = id => document.getElementById(id);
+    const manifestURL = new URL('./assets/pixel-world/atlas.json', location.href);
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    const categoryNames = {tree:'林间乔木',trees:'林间乔木',woodland:'林间乔木',shrub:'灌木与湿地',shrubs:'灌木与湿地',wetland:'灌木与湿地',flower:'缤纷花草',flowers:'缤纷花草',garden:'田园与地被',ground:'田园与地被',crops:'田园与地被'};
+    const animalNames = {'cat-orange':'橘猫','cat-calico':'三花猫','cat-tuxedo':'黑白猫','cat-sleeping-white':'白色睡猫','cat-gray-tabby':'灰虎斑猫','cat-siamese':'暹罗猫','dog-golden':'金毛犬','dog-corgi':'柯基','dog-shiba':'柴犬','dog-border-collie':'边境牧羊犬','dog-dachshund':'腊肠犬','dog-samoyed':'萨摩耶','bird-sparrow':'麻雀','bird-bluebird':'蓝鸟','bird-robin':'知更鸟','bird-canary':'金丝雀','bird-cockatiel':'玄凤鹦鹉','bird-mallard':'绿头鸭','squirrel-red':'红松鼠','squirrel-gray':'灰松鼠',chipmunk:'花栗鼠',rabbit:'兔子',hedgehog:'刺猬','butterflies-pair':'黄蓝蝴蝶','island-apple-meadow':'苹果草甸岛','island-woodland':'林间小岛','island-sakura-pond':'樱花池塘岛','island-harvest-garden':'丰收花园岛'};
+    const state = {manifest:null,images:new Map(),mode:'plants',category:'all',plant:null,stage:0,selected:{animals:null,islands:null},timer:null,loading:false};
+    const labelCategory = category => categoryNames[category] || category || '小岛植物';
+    const spriteName = id => state.manifest.sprites[id].name || animalNames[id] || id;
+    const plantEntries = () => Object.entries(state.manifest.plants);
+    const currentPlant = () => state.manifest.plants[state.plant];
+
+    function stopPlayback() {
+      if (state.timer !== null) clearInterval(state.timer);
+      state.timer = null;
+      $('play').setAttribute('aria-pressed','false');
+      $('play').querySelector('.play-icon').textContent = '▶';
+      $('play-label').textContent = '看它慢慢长大';
+    }
+    function updateMotion() {
+      if (reducedMotion.matches) stopPlayback();
+      $('play').disabled = reducedMotion.matches;
+      $('motion-note').hidden = !reducedMotion.matches;
+    }
+
+    // Keep one shared world-space box for every growth stage, with the roots at (0,0).
+    function anchoredBounds(ids) {
+      let left=0,right=0,above=0,below=0;
+      for (const id of ids) {
+        const {rect,anchor} = state.manifest.sprites[id];
+        left=Math.max(left,anchor[0]);right=Math.max(right,rect[2]-anchor[0]);
+        above=Math.max(above,anchor[1]);below=Math.max(below,rect[3]-anchor[1]);
+      }
+      return {left,right,above,below,width:left+right,height:above+below};
+    }
+    function canvasSize(canvas) {
+      const box=canvas.getBoundingClientRect();
+      const dpr=Math.min(devicePixelRatio || 1,3);
+      const width=Math.max(1,Math.round(box.width)),height=Math.max(1,Math.round(box.height));
+      const pixelWidth=Math.round(width*dpr),pixelHeight=Math.round(height*dpr);
+      if(canvas.width!==pixelWidth || canvas.height!==pixelHeight){canvas.width=pixelWidth;canvas.height=pixelHeight;}
+      const ctx=canvas.getContext('2d');
+      ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;
+      ctx.clearRect(0,0,width,height);
+      return {ctx,width,height,dpr};
+    }
+    function drawSprite(canvas,id,bounds,options={}) {
+      const {ctx,width,height,dpr}=canvasSize(canvas);
+      const sprite=state.manifest.sprites[id],image=state.images.get(sprite.image);
+      const inset=options.compact?13:30,topInset=options.compact?12:48;
+      const scale=options.fixedScale ?? Math.max(.001,Math.min((width-inset*2)/Math.max(bounds.width,1),(height-topInset-inset)/Math.max(bounds.height,1)));
+      const rootX=(width-bounds.width*scale)/2+bounds.left*scale;
+      const rootY=(height-topInset-inset-bounds.height*scale)/2+topInset+bounds.above*scale;
+      if(options.ground!==false){
+        ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--ground').trim();ctx.lineWidth=1/dpr;
+        ctx.beginPath();ctx.moveTo(inset,Math.round(rootY)+.5/dpr);ctx.lineTo(width-inset,Math.round(rootY)+.5/dpr);ctx.stroke();
+      }
+      const [sx,sy,sw,sh]=sprite.rect;
+      const x=Math.round((rootX-sprite.anchor[0]*scale)*dpr)/dpr;
+      const y=Math.round((rootY-sprite.anchor[1]*scale)*dpr)/dpr;
+      ctx.drawImage(image,sx,sy,sw,sh,x,y,sw*scale,sh*scale);
+    }
+    function renderCanvases() {
+      if(!state.manifest || $('gallery').hidden)return;
+      if(state.mode==='plants'){
+        const plant=currentPlant(),bounds=anchoredBounds(plant.stages);
+        drawSprite($('plant-canvas'),plant.stages[state.stage],bounds);
+        const canvases=[...$('comparison').querySelectorAll('canvas')];
+        const commonWidth=Math.min(...canvases.map(canvas=>Math.round(canvas.getBoundingClientRect().width)));
+        const commonHeight=Math.min(...canvases.map(canvas=>Math.round(canvas.getBoundingClientRect().height)));
+        const commonScale=Math.max(.001,Math.min((commonWidth-26)/Math.max(bounds.width,1),(commonHeight-25)/Math.max(bounds.height,1)));
+        canvases.forEach((canvas,i)=>drawSprite(canvas,plant.stages[i],bounds,{compact:true,fixedScale:commonScale}));
+      }else{
+        const id=state.selected[state.mode];
+        if(id)drawSprite($('collection-canvas'),id,anchoredBounds([id]),{ground:state.mode==='animals'});
+      }
+    }
+    function updateStage(stage) {
+      state.stage=Math.max(0,Math.min(4,Number(stage)));
+      const plant=currentPlant(),label=plant.stageLabels[state.stage],number=String(state.stage+1).padStart(2,'0');
+      $('stage-range').value=String(state.stage);$('stage-range').setAttribute('aria-valuetext',`第 ${state.stage+1} 阶段：${label}`);
+      $('stage-label').textContent=label;$('stage-count').textContent=`${number} / 05`;$('plant-badge').textContent=`GROWING · ${number} / 05`;
+      $('plant-canvas').setAttribute('aria-label',`${plant.name}，第 ${state.stage+1} 阶段，${label}`);
+      $('comparison').querySelectorAll('.stage-card').forEach((button,i)=>button.setAttribute('aria-pressed',String(i===state.stage)));
+      $('selection-status').textContent=`${plant.name} · ${label}`;
+      renderCanvases();
+    }
+    function selectPlant(id) {
+      stopPlayback();state.plant=id;state.stage=0;
+      const plant=currentPlant();$('plant-select').value=id;
+      $('plant-name').textContent=plant.name;$('plant-category').textContent=labelCategory(plant.category);
+      $('comparison').replaceChildren();
+      plant.stages.forEach((spriteId,i)=>{
+        const button=document.createElement('button');button.type='button';button.className='stage-card';button.setAttribute('aria-label',`查看${plant.name}第 ${i+1} 阶段：${plant.stageLabels[i]}`);
+        const surface=document.createElement('div');surface.className='stage-surface';
+        const canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');surface.append(canvas);
+        const caption=document.createElement('div');caption.className='card-caption';
+        const number=document.createElement('span');number.textContent=String(i+1).padStart(2,'0');
+        const label=document.createElement('strong');label.textContent=plant.stageLabels[i];caption.append(number,label);button.append(surface,caption);
+        button.addEventListener('click',()=>{stopPlayback();updateStage(i);});$('comparison').append(button);
+      });
+      updateStage(0);
+    }
+    function selectCategory(category) {
+      state.category=category;
+      $('categories').querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.category===category)));
+      const available=plantEntries().filter(([,plant])=>category==='all'||plant.category===category);
+      $('plant-select').replaceChildren();
+      for(const [id,plant] of available){const option=document.createElement('option');option.value=id;option.textContent=plant.name;$('plant-select').append(option);}
+      const next=available.some(([id])=>id===state.plant)?state.plant:available[0][0];
+      selectPlant(next);
+    }
+    function buildPlantCategories() {
+      $('categories').replaceChildren();
+      const categories=['all',...new Set(plantEntries().map(([,plant])=>plant.category))];
+      for(const category of categories){
+        const count=category==='all'?plantEntries().length:plantEntries().filter(([,plant])=>plant.category===category).length;
+        const button=document.createElement('button');button.type='button';button.className='category';button.dataset.category=category;
+        button.textContent=`${category==='all'?'全部植物':labelCategory(category)} · ${count}`;button.addEventListener('click',()=>selectCategory(category));$('categories').append(button);
+      }
+      selectCategory('all');
+    }
+    function selectCollection(id) {
+      state.selected[state.mode]=id;
+      const ids=state.manifest[state.mode],name=spriteName(id),isIsland=state.mode==='islands';
+      $('collection-select').querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.id===id)));
+      $('collection-name').textContent=name;$('collection-index').textContent=`${String(ids.indexOf(id)+1).padStart(2,'0')} / ${String(ids.length).padStart(2,'0')}`;
+      $('collection-badge').textContent=isIsland?'A LITTLE ISLAND':'A LITTLE NEIGHBOUR';
+      $('collection-description').textContent=isIsland?'一片草地，一段小路。留一些空白，等新的生命住进来。':id.includes('butterfl')?'两抹轻盈的颜色，把花园的消息带向远方。':'在草木之间，遇见一位小小的邻居。';
+      $('collection-canvas').setAttribute('aria-label',name);$('selection-status').textContent=name;renderCanvases();
+    }
+    function setMode(mode) {
+      if(!state.manifest)return;
+      stopPlayback();state.mode=mode;
+      document.querySelectorAll('[data-mode]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.mode===mode)));
+      $('plants-panel').hidden=mode!=='plants';$('collection-panel').hidden=mode==='plants';
+      if(mode==='plants'){updateStage(state.stage);return;}
+      $('collection-select').replaceChildren();
+      for(const id of state.manifest[mode]){
+        const button=document.createElement('button');button.type='button';button.className='collection-pick';button.dataset.id=id;button.textContent=spriteName(id);button.addEventListener('click',()=>selectCollection(id));$('collection-select').append(button);
+      }
+      selectCollection(state.selected[mode] || state.manifest[mode][0]);
+    }
+    function validateManifest(manifest) {
+      if(!manifest.images || !manifest.sprites || !manifest.plants || !Object.keys(manifest.plants).length)throw new Error('Missing atlas content');
+      const required=[];
+      for(const plant of Object.values(manifest.plants)){
+        if(!Array.isArray(plant.stages)||plant.stages.length!==5||!Array.isArray(plant.stageLabels)||plant.stageLabels.length!==5)throw new Error('Each plant needs five stages');
+        required.push(...plant.stages);
+      }
+      for(const key of ['animals','islands']){if(!Array.isArray(manifest[key])||!manifest[key].length)throw new Error('Missing collection');required.push(...manifest[key]);}
+      for(const id of required){
+        const sprite=manifest.sprites[id];
+        if(!sprite || !manifest.images[sprite.image] || !Array.isArray(sprite.rect)||sprite.rect.length!==4||!Array.isArray(sprite.anchor)||sprite.anchor.length!==2)throw new Error('Invalid sprite');
+        const [x,y,w,h]=sprite.rect,[ax,ay]=sprite.anchor;
+        if(![x,y,w,h,ax,ay].every(Number.isFinite)||x<0||y<0||w<=0||h<=0||ax<0||ay<0||ax>w||ay>h)throw new Error('Invalid sprite bounds');
+      }
+    }
+    async function load() {
+      if(state.loading)return;state.loading=true;stopPlayback();
+      $('gallery').hidden=true;$('load-state').hidden=false;$('retry').hidden=true;$('load-message').textContent='翻开小岛的生长笔记…';
+      try{
+        const response=await fetch(manifestURL,{cache:'no-store'});if(!response.ok)throw new Error(`Atlas ${response.status}`);
+        const manifest=await response.json();validateManifest(manifest);
+        const loaded=await Promise.all(Object.entries(manifest.images).map(async([key,entry])=>{
+          if(typeof entry.file!=='string')throw new Error('Missing image file');
+          const image=new Image();image.decoding='async';image.src=new URL(entry.file,manifestURL).href;
+          await image.decode();return [key,image];
+        }));
+        const images=new Map(loaded);
+        for(const sprite of Object.values(manifest.sprites)){
+          const image=images.get(sprite.image);if(!image)continue;
+          const [x,y,w,h]=sprite.rect;if(x+w>image.naturalWidth||y+h>image.naturalHeight)throw new Error('Sprite exceeds image');
+        }
+        state.manifest=manifest;state.images=images;state.mode='plants';state.plant=null;state.selected={animals:null,islands:null};
+        $('load-state').hidden=true;$('gallery').hidden=false;buildPlantCategories();setMode('plants');updateMotion();
+      }catch(error){
+        console.error('Art preview:',error);$('load-message').textContent='图鉴还在准备中，请稍后再翻一次。';$('retry').hidden=false;
+      }finally{state.loading=false;}
+    }
+    document.querySelectorAll('[data-mode]').forEach(button=>button.addEventListener('click',()=>setMode(button.dataset.mode)));
+    document.querySelectorAll('[data-theme]').forEach(button=>button.addEventListener('click',()=>{
+      document.body.classList.remove('theme-grass','theme-dark');if(button.dataset.theme!=='light')document.body.classList.add(`theme-${button.dataset.theme}`);
+      document.querySelectorAll('[data-theme]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));renderCanvases();
+    }));
+    $('plant-select').addEventListener('change',event=>selectPlant(event.target.value));
+    $('stage-range').addEventListener('input',event=>{stopPlayback();updateStage(event.target.value);});
+    $('play').addEventListener('click',()=>{
+      if(reducedMotion.matches||!state.manifest)return;
+      if(state.timer!==null){stopPlayback();return;}
+      if(state.stage===4)updateStage(0);
+      $('play').setAttribute('aria-pressed','true');$('play').querySelector('.play-icon').textContent='Ⅱ';$('play-label').textContent='停在这一刻';
+      state.timer=setInterval(()=>{updateStage(state.stage+1);if(state.stage===4)stopPlayback();},1100);
+    });
+    $('retry').addEventListener('click',load);reducedMotion.addEventListener('change',updateMotion);
+    document.addEventListener('visibilitychange',()=>{if(document.hidden)stopPlayback();});
+    let resizeFrame=0;
+    const resizeObserver=new ResizeObserver(()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(renderCanvases);});resizeObserver.observe(document.querySelector('main'));
+    updateMotion();load();
+  })();
+  </script>
+</body>
+</html>

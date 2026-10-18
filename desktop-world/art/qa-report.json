@@ -1,0 +1,86 @@
+{
+  "plants": 24,
+  "growthStates": 120,
+  "animalGroups": 24,
+  "islands": 4,
+  "distinctStageImages": true,
+  "images": [
+    {
+      "image": "islands-atlas.png",
+      "sprites": 4,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 42.91,
+      "missingVisiblePixels": 0,
+      "overlappingVisiblePixels": 0
+    },
+    {
+      "image": "animals-atlas.png",
+      "sprites": 24,
+      "alphaRange": [
+        0,
+        254
+      ],
+      "transparentPercent": 49.89,
+      "missingVisiblePixels": 0,
+      "overlappingVisiblePixels": 0
+    },
+    {
+      "image": "plants-mature-atlas.png",
+      "sprites": 24,
+      "alphaRange": [
+        0,
+        253
+      ],
+      "transparentPercent": 34.71,
+      "missingVisiblePixels": 0,
+      "overlappingVisiblePixels": 0
+    },
+    {
+      "image": "growth-trees-v2.png",
+      "sprites": 30,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 69.58,
+      "missingVisiblePixels": 0,
+      "overlappingVisiblePixels": 0
+    },
+    {
+      "image": "growth-shrubs-v2.png",
+      "sprites": 30,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 63.43,
+      "missingVisiblePixels": 0,
+      "overlappingVisiblePixels": 0
+    },
+    {
+      "image": "growth-flowers.png",
+      "sprites": 30,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 62.07,
+      "missingVisiblePixels": 0,
+      "overlappingVisiblePixels": 0
+    },
+    {
+      "image": "growth-garden.png",
+      "sprites": 30,
+      "alphaRange": [
+        0,
+        255
+      ],
+      "transparentPercent": 62.22,
+      "missingVisiblePixels": 0,
+      "overlappingVisiblePixels": 0
+    }
+  ]
+}

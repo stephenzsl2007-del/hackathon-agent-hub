@@ -1,0 +1,1044 @@
+{
+  "meta": {
+    "version": 1,
+    "coordinateSystem": "top-left origin; rect is [x,y,width,height], right/bottom exclusive",
+    "anchorUnits": "source pixels relative to rect top-left; not normalized",
+    "anchorMethod": "Approximate bottom-center of the alpha >=128 subject bounding box; islands use the bottom-center of the soil base. Ground pivots can be art-directed later.",
+    "regionMethod": "Visually identified semantic cells, then per-cell separator search using alpha >16. Source rects retain this subject bbox plus up to 3 px padding inside its separated source region. Original PNGs are unchanged.",
+    "assetBase": "../public/assets/pixel-world/",
+    "uniformGridSafe": {
+      "islands-atlas.png": true,
+      "plants-mature-atlas.png": false,
+      "animals-atlas.png": false
+    },
+    "warnings": [
+      "Animals atlas contains 24 semantic cells and 25 individual creatures because the final cell contains two butterflies. butterflies-pair must be used as a paired decoration unless separately authored.",
+      "Alpha values <=16 can form near-invisible edge residue outside the retained rects; the visible subject and alpha >16 edge pixels are retained.",
+      "The original island-scene.png is an opaque full-bleed 1536x1024 illustration with the tallest pine touching/cropped by its top edge; it is not a transparent island sprite.",
+      "moss-clover contains a fixed rock. Do not animate rock scale when using growth variants.",
+      "carrot shows an exposed orange root in the mature reference; a planted growth variant should retain only a visible root shoulder."
+    ]
+  },
+  "layout": {
+    "plants-mature-atlas.png": {
+      "size": [
+        1536,
+        1024
+      ],
+      "rowEdges": [
+        0,
+        344,
+        574,
+        793,
+        1024
+      ],
+      "columnEdgesByRow": [
+        [
+          0,
+          275,
+          506,
+          754,
+          1021,
+          1283,
+          1536
+        ],
+        [
+          0,
+          269,
+          515,
+          771,
+          1020,
+          1279,
+          1536
+        ],
+        [
+          0,
+          267,
+          515,
+          769,
+          1027,
+          1283,
+          1536
+        ],
+        [
+          0,
+          268,
+          510,
+          760,
+          1030,
+          1278,
+          1536
+        ]
+      ],
+      "note": "rowEdges are approximate guide boundaries; each emitted source rect uses a per-cell correction near tight row gaps."
+    },
+    "animals-atlas.png": {
+      "size": [
+        1536,
+        1024
+      ],
+      "rowEdges": [
+        0,
+        299,
+        562,
+        779,
+        1024
+      ],
+      "columnEdgesByRow": [
+        [
+          0,
+          263,
+          553,
+          783,
+          1060,
+          1297,
+          1536
+        ],
+        [
+          0,
+          267,
+          534,
+          787,
+          1036,
+          1296,
+          1536
+        ],
+        [
+          0,
+          253,
+          503,
+          757,
+          992,
+          1257,
+          1536
+        ],
+        [
+          0,
+          268,
+          517,
+          761,
+          1002,
+          1265,
+          1536
+        ]
+      ],
+      "note": "rowEdges are approximate guide boundaries; each emitted source rect uses a per-cell correction near tight row gaps."
+    },
+    "islands-atlas.png": {
+      "size": [
+        1254,
+        1254
+      ],
+      "rowEdges": [
+        0,
+        627,
+        1254
+      ],
+      "columnEdgesByRow": [
+        [
+          0,
+          627,
+          1254
+        ],
+        [
+          0,
+          627,
+          1254
+        ]
+      ],
+      "note": "2x2 split at 627 is inside a visibly empty gap for alpha >16."
+    }
+  },
+  "animals": [
+    {
+      "id": "cat-orange",
+      "name": "橘猫",
+      "image": "animals-atlas.png",
+      "rect": [
+        34,
+        51,
+        197,
+        237
+      ],
+      "anchor": [
+        98.5,
+        232
+      ],
+      "row": 0,
+      "column": 0
+    },
+    {
+      "id": "cat-calico",
+      "name": "三花猫",
+      "image": "animals-atlas.png",
+      "rect": [
+        295,
+        63,
+        247,
+        227
+      ],
+      "anchor": [
+        123.5,
+        223
+      ],
+      "row": 0,
+      "column": 1
+    },
+    {
+      "id": "cat-tuxedo",
+      "name": "黑白猫",
+      "image": "animals-atlas.png",
+      "rect": [
+        569,
+        47,
+        199,
+        239
+      ],
+      "anchor": [
+        99.5,
+        235
+      ],
+      "row": 0,
+      "column": 2
+    },
+    {
+      "id": "cat-sleeping-white",
+      "name": "白色睡猫",
+      "image": "animals-atlas.png",
+      "rect": [
+        799,
+        131,
+        245,
+        155
+      ],
+      "anchor": [
+        123.0,
+        151
+      ],
+      "row": 0,
+      "column": 3
+    },
+    {
+      "id": "cat-gray-tabby",
+      "name": "灰虎斑猫",
+      "image": "animals-atlas.png",
+      "rect": [
+        1077,
+        47,
+        195,
+        247
+      ],
+      "anchor": [
+        98.0,
+        243
+      ],
+      "row": 0,
+      "column": 4
+    },
+    {
+      "id": "cat-siamese",
+      "name": "暹罗猫",
+      "image": "animals-atlas.png",
+      "rect": [
+        1323,
+        49,
+        177,
+        237
+      ],
+      "anchor": [
+        88.5,
+        233
+      ],
+      "row": 0,
+      "column": 5
+    },
+    {
+      "id": "dog-golden",
+      "name": "金毛犬",
+      "image": "animals-atlas.png",
+      "rect": [
+        29,
+        317,
+        200,
+        245
+      ],
+      "anchor": [
+        100.0,
+        242
+      ],
+      "row": 1,
+      "column": 0
+    },
+    {
+      "id": "dog-corgi",
+      "name": "柯基",
+      "image": "animals-atlas.png",
+      "rect": [
+        305,
+        331,
+        215,
+        231
+      ],
+      "anchor": [
+        108.0,
+        228
+      ],
+      "row": 1,
+      "column": 1
+    },
+    {
+      "id": "dog-shiba",
+      "name": "柴犬",
+      "image": "animals-atlas.png",
+      "rect": [
+        548,
+        315,
+        214,
+        247
+      ],
+      "anchor": [
+        107.0,
+        244
+      ],
+      "row": 1,
+      "column": 2
+    },
+    {
+      "id": "dog-border-collie",
+      "name": "边境牧羊犬",
+      "image": "animals-atlas.png",
+      "rect": [
+        813,
+        304,
+        216,
+        258
+      ],
+      "anchor": [
+        108.5,
+        255
+      ],
+      "row": 1,
+      "column": 3
+    },
+    {
+      "id": "dog-dachshund",
+      "name": "腊肠犬",
+      "image": "animals-atlas.png",
+      "rect": [
+        1044,
+        365,
+        239,
+        193
+      ],
+      "anchor": [
+        119.5,
+        188
+      ],
+      "row": 1,
+      "column": 4
+    },
+    {
+      "id": "dog-samoyed",
+      "name": "萨摩耶",
+      "image": "animals-atlas.png",
+      "rect": [
+        1309,
+        321,
+        200,
+        241
+      ],
+      "anchor": [
+        100.5,
+        237
+      ],
+      "row": 1,
+      "column": 5
+    },
+    {
+      "id": "bird-sparrow",
+      "name": "麻雀",
+      "image": "animals-atlas.png",
+      "rect": [
+        27,
+        596,
+        195,
+        170
+      ],
+      "anchor": [
+        97.5,
+        166
+      ],
+      "row": 2,
+      "column": 0
+    },
+    {
+      "id": "bird-bluebird",
+      "name": "蓝鸟",
+      "image": "animals-atlas.png",
+      "rect": [
+        285,
+        598,
+        191,
+        172
+      ],
+      "anchor": [
+        95.5,
+        168
+      ],
+      "row": 2,
+      "column": 1
+    },
+    {
+      "id": "bird-robin",
+      "name": "知更鸟",
+      "image": "animals-atlas.png",
+      "rect": [
+        530,
+        583,
+        206,
+        186
+      ],
+      "anchor": [
+        103.0,
+        182
+      ],
+      "row": 2,
+      "column": 2
+    },
+    {
+      "id": "bird-canary",
+      "name": "金丝雀",
+      "image": "animals-atlas.png",
+      "rect": [
+        779,
+        595,
+        183,
+        172
+      ],
+      "anchor": [
+        91.0,
+        167
+      ],
+      "row": 2,
+      "column": 3
+    },
+    {
+      "id": "bird-cockatiel",
+      "name": "玄凤鹦鹉",
+      "image": "animals-atlas.png",
+      "rect": [
+        1013,
+        562,
+        220,
+        212
+      ],
+      "anchor": [
+        110.0,
+        209
+      ],
+      "row": 2,
+      "column": 4
+    },
+    {
+      "id": "bird-mallard",
+      "name": "绿头鸭",
+      "image": "animals-atlas.png",
+      "rect": [
+        1282,
+        579,
+        212,
+        201
+      ],
+      "anchor": [
+        106.5,
+        200
+      ],
+      "row": 2,
+      "column": 5
+    },
+    {
+      "id": "squirrel-red",
+      "name": "红松鼠",
+      "image": "animals-atlas.png",
+      "rect": [
+        29,
+        785,
+        226,
+        210
+      ],
+      "anchor": [
+        113.0,
+        207
+      ],
+      "row": 3,
+      "column": 0
+    },
+    {
+      "id": "squirrel-gray",
+      "name": "灰松鼠",
+      "image": "animals-atlas.png",
+      "rect": [
+        282,
+        784,
+        215,
+        208
+      ],
+      "anchor": [
+        107.5,
+        204
+      ],
+      "row": 3,
+      "column": 1
+    },
+    {
+      "id": "chipmunk",
+      "name": "花栗鼠",
+      "image": "animals-atlas.png",
+      "rect": [
+        537,
+        807,
+        208,
+        187
+      ],
+      "anchor": [
+        103.5,
+        183
+      ],
+      "row": 3,
+      "column": 2
+    },
+    {
+      "id": "rabbit",
+      "name": "兔子",
+      "image": "animals-atlas.png",
+      "rect": [
+        778,
+        778,
+        183,
+        218
+      ],
+      "anchor": [
+        91.5,
+        215
+      ],
+      "row": 3,
+      "column": 3
+    },
+    {
+      "id": "hedgehog",
+      "name": "刺猬",
+      "image": "animals-atlas.png",
+      "rect": [
+        1033,
+        828,
+        209,
+        166
+      ],
+      "anchor": [
+        104.0,
+        162
+      ],
+      "row": 3,
+      "column": 4
+    },
+    {
+      "id": "butterflies-pair",
+      "name": "黄蓝蝴蝶组合",
+      "image": "animals-atlas.png",
+      "rect": [
+        1288,
+        805,
+        226,
+        171
+      ],
+      "anchor": [
+        112.5,
+        167
+      ],
+      "row": 3,
+      "column": 5,
+      "note": "Two butterflies in one source sprite; pivot approximates bottom-center of their combined visual bounds, not a physical foot position."
+    }
+  ],
+  "maturePlants": [
+    {
+      "id": "oak",
+      "name": "橡树",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        10,
+        30,
+        260,
+        309
+      ],
+      "anchor": [
+        130.0,
+        305
+      ],
+      "row": 0,
+      "column": 0
+    },
+    {
+      "id": "birch",
+      "name": "白桦",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        280,
+        17,
+        219,
+        321
+      ],
+      "anchor": [
+        110.0,
+        318
+      ],
+      "row": 0,
+      "column": 1
+    },
+    {
+      "id": "pine",
+      "name": "松树",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        513,
+        12,
+        239,
+        324
+      ],
+      "anchor": [
+        119.5,
+        320
+      ],
+      "row": 0,
+      "column": 2
+    },
+    {
+      "id": "cherry",
+      "name": "樱花树",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        756,
+        32,
+        263,
+        306
+      ],
+      "anchor": [
+        131.5,
+        302
+      ],
+      "row": 0,
+      "column": 3
+    },
+    {
+      "id": "apple",
+      "name": "苹果树",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        1023,
+        34,
+        255,
+        302
+      ],
+      "anchor": [
+        127.5,
+        298
+      ],
+      "row": 0,
+      "column": 4
+    },
+    {
+      "id": "willow",
+      "name": "垂柳",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        1288,
+        55,
+        236,
+        284
+      ],
+      "anchor": [
+        118.0,
+        280
+      ],
+      "row": 0,
+      "column": 5
+    },
+    {
+      "id": "blueberry",
+      "name": "蓝莓",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        28,
+        365,
+        230,
+        198
+      ],
+      "anchor": [
+        115.0,
+        194
+      ],
+      "row": 1,
+      "column": 0
+    },
+    {
+      "id": "raspberry",
+      "name": "覆盆子",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        280,
+        364,
+        229,
+        210
+      ],
+      "anchor": [
+        114.5,
+        205
+      ],
+      "row": 1,
+      "column": 1
+    },
+    {
+      "id": "hydrangea",
+      "name": "绣球",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        522,
+        358,
+        245,
+        215
+      ],
+      "anchor": [
+        122.0,
+        211
+      ],
+      "row": 1,
+      "column": 2
+    },
+    {
+      "id": "fern",
+      "name": "蕨类",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        775,
+        353,
+        235,
+        220
+      ],
+      "anchor": [
+        117.5,
+        216
+      ],
+      "row": 1,
+      "column": 3
+    },
+    {
+      "id": "cattail",
+      "name": "香蒲",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        1031,
+        348,
+        242,
+        226
+      ],
+      "anchor": [
+        120.5,
+        224
+      ],
+      "row": 1,
+      "column": 4
+    },
+    {
+      "id": "waterlily",
+      "name": "睡莲",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        1286,
+        414,
+        235,
+        139
+      ],
+      "anchor": [
+        117.0,
+        135
+      ],
+      "row": 1,
+      "column": 5
+    },
+    {
+      "id": "sunflower",
+      "name": "向日葵",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        22,
+        572,
+        233,
+        213
+      ],
+      "anchor": [
+        116.0,
+        209
+      ],
+      "row": 2,
+      "column": 0
+    },
+    {
+      "id": "daisy",
+      "name": "雏菊",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        280,
+        590,
+        219,
+        195
+      ],
+      "anchor": [
+        109.5,
+        191
+      ],
+      "row": 2,
+      "column": 1
+    },
+    {
+      "id": "lavender",
+      "name": "薰衣草",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        531,
+        584,
+        229,
+        205
+      ],
+      "anchor": [
+        114.5,
+        202
+      ],
+      "row": 2,
+      "column": 2
+    },
+    {
+      "id": "cosmos",
+      "name": "波斯菊",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        778,
+        588,
+        243,
+        199
+      ],
+      "anchor": [
+        121.5,
+        195
+      ],
+      "row": 2,
+      "column": 3
+    },
+    {
+      "id": "buttercup",
+      "name": "毛茛",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        1034,
+        595,
+        239,
+        188
+      ],
+      "anchor": [
+        119.5,
+        183
+      ],
+      "row": 2,
+      "column": 4
+    },
+    {
+      "id": "forget-me-not",
+      "name": "勿忘草",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        1293,
+        591,
+        222,
+        195
+      ],
+      "anchor": [
+        111.0,
+        192
+      ],
+      "row": 2,
+      "column": 5
+    },
+    {
+      "id": "fly-agaric",
+      "name": "红伞菇",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        36,
+        799,
+        215,
+        197
+      ],
+      "anchor": [
+        107.0,
+        193
+      ],
+      "row": 3,
+      "column": 0
+    },
+    {
+      "id": "chanterelle",
+      "name": "鸡油菌",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        285,
+        806,
+        214,
+        188
+      ],
+      "anchor": [
+        107.5,
+        184
+      ],
+      "row": 3,
+      "column": 1
+    },
+    {
+      "id": "moss-clover",
+      "name": "苔石与三叶草",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        521,
+        810,
+        234,
+        185
+      ],
+      "anchor": [
+        117.0,
+        181
+      ],
+      "row": 3,
+      "column": 2,
+      "note": "Composite moss/clover and fixed stone. Keep stone static across growth stages."
+    },
+    {
+      "id": "pumpkin",
+      "name": "南瓜",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        766,
+        796,
+        259,
+        207
+      ],
+      "anchor": [
+        130.0,
+        203
+      ],
+      "row": 3,
+      "column": 3
+    },
+    {
+      "id": "strawberry",
+      "name": "草莓",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        1036,
+        806,
+        239,
+        188
+      ],
+      "anchor": [
+        120.0,
+        184
+      ],
+      "row": 3,
+      "column": 4
+    },
+    {
+      "id": "carrot",
+      "name": "胡萝卜",
+      "image": "plants-mature-atlas.png",
+      "rect": [
+        1282,
+        797,
+        242,
+        200
+      ],
+      "anchor": [
+        121.0,
+        197
+      ],
+      "row": 3,
+      "column": 5
+    }
+  ],
+  "islands": [
+    {
+      "id": "island-apple-meadow",
+      "name": "苹果草甸岛",
+      "image": "islands-atlas.png",
+      "rect": [
+        36,
+        52,
+        587,
+        557
+      ],
+      "anchor": [
+        293.5,
+        553
+      ],
+      "row": 0,
+      "column": 0
+    },
+    {
+      "id": "island-woodland",
+      "name": "林间小岛",
+      "image": "islands-atlas.png",
+      "rect": [
+        661,
+        29,
+        560,
+        586
+      ],
+      "anchor": [
+        280.0,
+        583
+      ],
+      "row": 0,
+      "column": 1
+    },
+    {
+      "id": "island-sakura-pond",
+      "name": "樱花池塘岛",
+      "image": "islands-atlas.png",
+      "rect": [
+        25,
+        637,
+        592,
+        544
+      ],
+      "anchor": [
+        296.0,
+        541
+      ],
+      "row": 1,
+      "column": 0
+    },
+    {
+      "id": "island-harvest-garden",
+      "name": "丰收花园岛",
+      "image": "islands-atlas.png",
+      "rect": [
+        638,
+        653,
+        595,
+        525
+      ],
+      "anchor": [
+        297.5,
+        521
+      ],
+      "row": 1,
+      "column": 1
+    }
+  ]
+}
