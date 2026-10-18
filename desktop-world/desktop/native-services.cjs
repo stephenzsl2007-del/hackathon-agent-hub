@@ -92,11 +92,30 @@ class AtomicStore {
 
 const describeError = error => ({ ENOENT: '文件已经移动或不存在', EACCES: '没有权限处理这个文件', EPERM: '系统未允许回收这个文件', EBUSY: '文件正被占用，请稍后再试' }[error?.code] || error?.message || '系统回收失败，请稍后重试');
 class FileRecycle {
-  constructor({ trashItem, protectedPaths = [], now = Date.now }) {
+  constructor({ trashItem, protectedPaths = [], now = Date.now, platform = process.platform, env = process.env, home = os.homedir() }) {
     this.trashItem = trashItem; this.now = now; this.batches = new Map(); this.activePaths = new Set();
-    this.protectedPaths = ['/System', '/Library', '/Applications', '/bin', '/sbin', '/usr', '/etc', '/private/etc', '/private/var', path.join(os.homedir(), 'Library'), path.join(os.homedir(), '.Trash'), ...protectedPaths].map(p => path.resolve(p));
+    this.pathAPI = platform === 'win32' ? path.win32 : path;
+    this.windows = platform === 'win32';
+    const defaults = this.windows
+      ? [env.SystemRoot || env.WINDIR || 'C:\\Windows', env.ProgramFiles || 'C:\\Program Files', env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', env.ProgramData || 'C:\\ProgramData', env.APPDATA, env.LOCALAPPDATA, this.pathAPI.join(home, 'AppData')]
+      : ['/System', '/Library', '/Applications', '/bin', '/sbin', '/usr', '/etc', '/private/etc', '/private/var', path.join(home, 'Library'), path.join(home, '.Trash')];
+    this.protectedPaths = [...defaults, ...protectedPaths].filter(Boolean).map(p => this._key(p));
   }
-  _protected(filename) { return this.protectedPaths.some(base => filename === base || filename.startsWith(base + path.sep)); }
+  _key(filename) {
+    let resolved = this.pathAPI.resolve(filename);
+    if (this.windows) {
+      // realpath can return extended-length Windows paths. Compare their normal
+      // drive / UNC forms so the namespace prefix cannot bypass protection.
+      if (resolved.slice(0, 8).toUpperCase() === '\\\\?\\UNC\\') resolved = '\\\\' + resolved.slice(8);
+      else if (resolved.startsWith('\\\\?\\')) resolved = resolved.slice(4);
+    }
+    return this.windows ? resolved.toLowerCase() : resolved;
+  }
+  _protected(filename) {
+    const key = this._key(filename);
+    return this.protectedPaths.some(base => key === base || key.startsWith(base.endsWith(this.pathAPI.sep) ? base : base + this.pathAPI.sep))
+      || (this.windows && /(?:^|\\)\$recycle\.bin(?:\\|$)/i.test(key));
+  }
   _prune() { for (const [key, batch] of this.batches) if (!batch.processing && this.now() > batch.expiresAt) this.batches.delete(key); }
   async prepare(paths) {
     this._prune();
@@ -107,8 +126,8 @@ class FileRecycle {
       try {
         if (typeof raw !== 'string' || !path.isAbsolute(raw) || raw.includes('\0')) throw new Error('只接受本次拖入的真实文件');
         const selected = path.resolve(raw);
-        if (unique.has(selected)) throw new Error('本批已包含这个文件');
-        unique.add(selected);
+        if (unique.has(this._key(selected))) throw new Error('本批已包含这个文件');
+        unique.add(this._key(selected));
         const stat = await fs.lstat(selected);
         if (stat.isSymbolicLink()) throw new Error('暂不回收符号链接，请选择原始文件');
         if (!stat.isFile()) throw new Error('暂不回收文件夹或应用，请选择普通文件');
@@ -142,16 +161,18 @@ class FileRecycle {
       for (const item of batch.items) {
         const result = { id: item.id, name: item.name, status: 'failed' };
         if (item.status !== 'ready') { result.error = item.error; results.push(result); continue; }
-        if (this.activePaths.has(item.path)) { result.error = '这个文件正在被另一批处理'; results.push(result); continue; }
-        this.activePaths.add(item.path);
+        const key = this._key(item.path);
+        if (this.activePaths.has(key)) { result.error = '这个文件正在被另一批处理'; results.push(result); continue; }
+        this.activePaths.add(key);
         try {
           const stat = await fs.lstat(item.path);
           const old = item.fingerprint;
           if (!stat.isFile() || stat.isSymbolicLink() || stat.dev !== old.dev || stat.ino !== old.ino || stat.size !== old.size || stat.mtimeMs !== old.mtimeMs || await fs.realpath(item.path) !== item.path) throw new Error('文件在确认前发生变化，请重新拖入确认');
+          if (this._protected(await fs.realpath(item.path))) throw new Error('这个文件位于受保护目录，不能通过花园回收');
           await this.trashItem(item.path);
           result.status = 'success';
         } catch (error) { result.error = describeError(error); }
-        finally { this.activePaths.delete(item.path); }
+        finally { this.activePaths.delete(key); }
         results.push(result);
       }
       const rewards = results.filter(item => item.status === 'success').length;
@@ -168,19 +189,19 @@ class QuitHandshake {
     const requestId = crypto.randomUUID();
     let resolve;
     const promise = new Promise(done => { resolve = done; });
-    const finish = acknowledged => {
+    const finish = (acknowledged, saved = false) => {
       if (!this.pending || this.pending.requestId !== requestId) return;
       clearTimeout(this.pending.timer);
       this.pending = null;
-      resolve({ acknowledged, requestId });
+      resolve({ acknowledged, saved, requestId });
     };
     this.pending = { requestId, promise, finish, timer: setTimeout(() => finish(false), this.timeout) };
     try { send({ type: 'prepare-quit', requestId }); } catch { finish(false); }
     return promise;
   }
-  acknowledge(requestId) {
+  acknowledge(requestId, saved = true) {
     if (!this.pending || typeof requestId !== 'string' || requestId !== this.pending.requestId) return { ok: false };
-    this.pending.finish(true);
+    this.pending.finish(true, saved === true);
     return { ok: true };
   }
 }

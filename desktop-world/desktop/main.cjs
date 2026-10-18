@@ -1,5 +1,6 @@
 'use strict';
-const { app, BrowserWindow, Menu, ipcMain, globalShortcut, screen, session, Tray, nativeImage, shell, powerMonitor } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, globalShortcut, screen, session, Tray, nativeImage, shell, powerMonitor, dialog } = require('electron');
+const { execFile } = require('node:child_process');
 const path = require('node:path');
 const os = require('node:os');
 const { createWorldServer } = require('../server.cjs');
@@ -11,13 +12,17 @@ const quitHandshake = new QuitHandshake({ timeout: 3000 });
 let settings = { alwaysOnTop: true, mouseMode: 'interactive', bounds: null };
 const shortcutState = {};
 app.setName('息屿');
+// A separate profile keeps development and automated acceptance out of daily saves.
+if (process.env.XIYU_PROFILE_DIR && path.isAbsolute(process.env.XIYU_PROFILE_DIR)) app.setPath('userData', process.env.XIYU_PROFILE_DIR);
+if (process.platform === 'win32') app.setAppUserModelId('cc.xiyu.desktop-world');
 const single = app.requestSingleInstanceLock();
 if (!single) app.quit();
 
 function defaultBounds() {
   const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
   const area = display.workArea;
-  const width = Math.round(area.width * .72), height = Math.round(area.height * .64);
+  const width = Math.min(area.width, Math.max(560, Math.round(area.width * .44)));
+  const height = Math.min(area.height, Math.max(360, Math.round(width * .625)));
   return { x: area.x + area.width - width - 16, y: area.y + area.height - height - 12, width, height };
 }
 function clampBounds(bounds) {
@@ -31,7 +36,7 @@ function clampBounds(bounds) {
   return { width, height, x: Math.round(Math.max(area.x, Math.min(bounds.x, area.x + area.width - width))), y: Math.round(Math.max(area.y, Math.min(bounds.y, area.y + area.height - height))) };
 }
 function desktopState() {
-  return { desktopMode: mode, visible: Boolean(win?.isVisible()), alwaysOnTop: settings.alwaysOnTop, mouseMode: settings.mouseMode, feeding, moving, bounds: win?.getBounds() || settings.bounds, shortcuts: shortcutState };
+  return { platform: process.platform, desktopMode: mode, visible: Boolean(win?.isVisible()), alwaysOnTop: settings.alwaysOnTop, mouseMode: settings.mouseMode, feeding, moving, bounds: win?.getBounds() || settings.bounds, shortcuts: shortcutState };
 }
 function sendState() { if (win && !win.isDestroyed()) win.webContents.send('world:desktop-state', desktopState()); updateTray(); }
 function command(type, details = {}) {
@@ -65,7 +70,7 @@ function setDesktopMode(_enabled) {
   // Legacy API remains for the renderer, but the native product always stays transparent.
   mode = true;
   applyTopmost();
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  if (process.platform === 'darwin') win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   applyMouseMode();
   win.webContents.send('world:mode', true);
   sendState();
@@ -99,7 +104,7 @@ function moveGarden(delta) {
 function setMoving(enabled) { moving = Boolean(enabled); feeding = false; partialIgnore = false; applyTopmost(); if (moving) win.showInactive(); applyMouseMode(); sendState(); command('move', { active: moving }); }
 function recover() {
   settings.mouseMode = 'interactive'; feeding = false; moving = false; partialIgnore = false;
-  if (!win.isVisible()) win.showInactive();
+  win.show(); win.focus();
   win.setBounds(clampBounds(win.getBounds())); applyTopmost(); applyMouseMode(); persistWindow(); sendState(); command('tools');
 }
 function menuTemplate() {
@@ -130,7 +135,7 @@ function menuTemplate() {
       { label: '向上移动', click: () => moveGarden({ dx: 0, dy: -50 }) }, { label: '向下移动', click: () => moveGarden({ dx: 0, dy: 50 }) },
       { label: '恢复默认位置', click: resetBounds },
     ] },
-    { label: '打开系统废纸篓', click: () => openTrash() },
+    { label: process.platform === 'win32' ? '打开系统回收站' : '打开系统废纸篓', click: () => openTrash() },
     { type: 'separator' },
     { label: '完全退出息屿', role: 'quit' },
   ];
@@ -139,11 +144,20 @@ function updateTray() { if (tray && !tray.isDestroyed()) tray.setContextMenu(Men
 function createTray() {
   const size = 18, bytes = Buffer.alloc(size * size * 4);
   const blocks = [[8,7,2,10],[3,3,6,5],[9,1,6,6],[5,7,4,2],[11,6,3,2],[4,15,10,2]];
-  for (const [x,y,w,h] of blocks) for (let yy=y;yy<y+h;yy++) for(let xx=x;xx<x+w;xx++) bytes[(yy*size+xx)*4+3]=255;
-  const icon = nativeImage.createFromBitmap(bytes, { width: size, height: size, scaleFactor: 1 }); icon.setTemplateImage(true);
+  for (const [x,y,w,h] of blocks) for (let yy=y;yy<y+h;yy++) for(let xx=x;xx<x+w;xx++) {
+    const offset=(yy*size+xx)*4;
+    bytes[offset]=84; bytes[offset+1]=132; bytes[offset+2]=97; bytes[offset+3]=255;
+  }
+  const icon = nativeImage.createFromBitmap(bytes, { width: size, height: size, scaleFactor: 1 }); icon.setTemplateImage(process.platform === 'darwin');
   tray = new Tray(icon); tray.setToolTip('息屿 · 花园与工具'); updateTray();
+  if (process.platform === 'win32') tray.on('click', recover);
 }
 async function openTrash() {
+  if (process.platform === 'win32') {
+    return new Promise(resolve => execFile(path.join(process.env.SystemRoot || 'C:\\Windows', 'explorer.exe'), ['shell:RecycleBinFolder'], { windowsHide: true }, error => {
+      resolve(error && error.code !== 1 ? { ok: false, error: '暂时无法打开回收站，请从系统桌面打开。' } : { ok: true });
+    }));
+  }
   const target = process.platform === 'darwin' ? path.join(os.homedir(), '.Trash') : process.platform === 'win32' ? 'shell:RecycleBinFolder' : path.join(os.homedir(), '.local/share/Trash/files');
   const error = await shell.openPath(target);
   return error ? { ok: false, error: '暂时无法打开系统废纸篓，请从系统桌面打开。' } : { ok: true };
@@ -171,7 +185,7 @@ function installIPC() {
   handle('world:open-trash', openTrash);
   handle('world:load-state', options => (options?.slot === 'demo' ? demoStore : gardenStore).load());
   handle('world:save-state', (snapshot, options) => (options?.slot === 'demo' ? demoStore : gardenStore).save(snapshot, options || {}));
-  handle('world:ack-quit', requestId => quitHandshake.acknowledge(requestId));
+  handle('world:ack-quit', (requestId, saved) => quitHandshake.acknowledge(requestId, saved));
   handle('world:close', () => app.quit());
 }
 async function createWindow() {
@@ -182,7 +196,7 @@ async function createWindow() {
     webPreferences: { preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, backgroundThrottling: true },
   });
   win.setAlwaysOnTop(settings.alwaysOnTop, 'floating');
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  if (process.platform === 'darwin') win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   win.webContents.on('will-navigate', (event, target) => { if (!target.startsWith(baseURL + '/')) event.preventDefault(); });
   win.webContents.on('before-input-event', (_event, input) => {
@@ -192,6 +206,7 @@ async function createWindow() {
     }
   });
   win.on('move', persistWindow); win.on('resize', persistWindow);
+  win.on('close', event => { if (!shuttingDown) { event.preventDefault(); app.quit(); } });
   win.on('show', () => { command('visibility', { visible: true }); sendState(); });
   win.on('hide', () => { commandHidden(); sendState(); });
   win.once('ready-to-show', () => { win.showInactive(); applyMouseMode(); });
@@ -242,14 +257,27 @@ app.on('before-quit', event => {
   event.preventDefault();
   if (quitting) return;
   quitting = (async () => {
-    if (win && !win.isDestroyed() && !win.webContents.isDestroyed()) {
-      await quitHandshake.request(message => win.webContents.send('world:command', message));
+    while (win && !win.isDestroyed() && !win.webContents.isDestroyed()) {
+      const result = await quitHandshake.request(message => win.webContents.send('world:command', message));
+      if (result.acknowledged && result.saved) break;
+      recover();
+      const choice = await dialog.showMessageBox(win, {
+        type: 'warning', title: '小岛还没有存好',
+        message: result.acknowledged ? '最后一次保存未成功。' : '花园暂时没有回应保存请求。',
+        detail: '可以重试，或返回花园继续操作。选择“仍然退出”会丢失尚未保存的变化。',
+        buttons: ['重试保存', '返回花园', '仍然退出'], defaultId: 0, cancelId: 1, noLink: true,
+      });
+      if (choice.response === 1) return;
+      if (choice.response === 2) break;
     }
     clearTimeout(windowSaveTimer);
     if (win && !win.isDestroyed()) settings.bounds = win.getBounds();
     const windowSave = windowStore?.save(settings) || Promise.resolve();
     windowStore?.flush();
     await Promise.allSettled([windowSave, gardenStore?.flush(), demoStore?.flush()]);
-  })().finally(() => { shuttingDown = true; app.quit(); });
+    shuttingDown = true; app.quit();
+  })().catch(error => {
+    dialog.showErrorBox('暂时无法退出', error.message || '请重试保存后再退出。');
+  }).finally(() => { quitting = null; });
 });
 app.on('will-quit', () => { globalShortcut.unregisterAll(); tray?.destroy(); if (world) world.close(); });

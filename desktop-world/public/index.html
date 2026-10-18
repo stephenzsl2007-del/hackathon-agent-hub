@@ -97,7 +97,9 @@
     <div class="dialog-actions"><button id="focus-start" class="primary-button">开始专注</button><button id="focus-pause" class="secondary-button" hidden>暂停</button><button id="focus-cancel" class="secondary-button" hidden>取消</button></div>
     <label class="focus-note-label">随手记一点<textarea id="focus-note" placeholder="只在本次打开时保留；输入会带来一阵轻雨。" rows="3"></textarea></label>
     <p class="panel-status">当前键盘雨只感知息屿应用内的输入；在其他应用工作时，专注计时照常继续。不会读取或保存按键内容。</p>
-    <button id="water-garden" class="secondary-button full-width">用 1 滴水浇花</button>
+    <div class="focus-reward"><span>专注水滴 <b id="focus-water-count">0</b></span><span>一滴，见证一次成长</span></div>
+    <button id="water-garden" class="secondary-button full-width">用 1 滴水，让一株小苗长大一阶段</button>
+    <p class="panel-status">优先照顾成长进度最慢的小苗；没有可成长的小苗时保留水滴。普通落雨仍能慢慢浇灌花园。</p>
   </dialog>
 
   <dialog id="settings-dialog" class="panel-dialog settings-dialog">
@@ -134,6 +136,7 @@
     <p class="share-description">手机和这台电脑连上同一个 Wi-Fi，扫码进入。<br>大家可以一起送风、浇水、投喂和唤起萤火。</p>
     <div class="qr-wrap"><img id="phone-qr" alt="手机互动二维码" width="180" height="180"><span id="qr-status">正在准备邀请…</span></div>
     <div class="invite-link"><input id="phone-url" readonly aria-label="手机互动地址"><button id="copy-link">复制</button></div>
+    <div class="network-picker"><label for="invite-network">连接地址</label><select id="invite-network" aria-label="选择手机可访问的网络地址"></select><button id="refresh-invite" class="secondary-button">刷新</button></div>
     <p class="network-note" id="network-note">如果现场 Wi-Fi 隔离设备，可以让电脑和手机连接同一个手机热点。</p>
     <div class="connection-state"><span class="live-dot"></span><span id="connection-label">等待连接</span></div>
   </dialog>

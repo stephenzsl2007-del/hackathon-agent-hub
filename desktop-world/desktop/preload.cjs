@@ -7,6 +7,7 @@ function listen(channel, callback) {
   return () => ipcRenderer.removeListener(channel, listener);
 }
 contextBridge.exposeInMainWorld('desktopWorld', {
+  platform: process.platform,
   getDesktopMode: () => ipcRenderer.invoke('world:get-desktop-mode'),
   getDesktopState: () => ipcRenderer.invoke('world:get-desktop-state'),
   setDesktopMode: enabled => ipcRenderer.invoke('world:set-desktop-mode', Boolean(enabled)),
@@ -29,7 +30,7 @@ contextBridge.exposeInMainWorld('desktopWorld', {
   openTrash: () => ipcRenderer.invoke('world:open-trash'),
   loadState: options => ipcRenderer.invoke('world:load-state', options),
   saveState: (snapshot, options) => ipcRenderer.invoke('world:save-state', snapshot, options),
-  ackQuit: requestId => ipcRenderer.invoke('world:ack-quit', requestId),
+  ackQuit: (requestId, saved) => ipcRenderer.invoke('world:ack-quit', requestId, saved === true),
   close: () => ipcRenderer.invoke('world:close'),
   onModeChange: callback => listen('world:mode', callback),
   onDesktopState: callback => listen('world:desktop-state', callback),

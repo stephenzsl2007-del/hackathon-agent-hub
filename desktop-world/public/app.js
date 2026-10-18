@@ -31,6 +31,16 @@ const hints = {
 let world, mic, companion, focusSession, desktopUI, gardenAudio, currentTool='explore', night=false, saveTimer, noticeTimer, demoTimers=[], demoRunning=false, demoBackup=null, eventStream, inviteUrl='', desktopMode=false, spaceWindTimer, micState='stopped', ignoringMouse=false, dragDepth=0, stateReady=false, saveRevision=0, saveInFlight=null, toolsTimer, desktopState={}, moveDrag=null;
 const storageKey='xiyu-state-v2';
 const resources={food:0,water:0};const rewardedSessions=new Set();
+const isWindows=(window.desktopWorld?.platform || navigator.platform || '').toLowerCase().startsWith('win');
+const recoverShortcut=isWindows?'Ctrl+Alt+Shift+G':'⌘⌥⇧G';
+const dragKey=isWindows?'Alt':'Option（⌥）';
+const trayLabel=isWindows?'任务栏通知区域的小叶子':'菜单栏的小叶子';
+const trashLabel=isWindows?'回收站':'废纸篓';
+// Use the same platform words in static descriptions and subsequent notices.
+if(isWindows){
+  const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  while(walker.nextNode())walker.currentNode.textContent=walker.currentNode.textContent.replaceAll('废纸篓','回收站').replaceAll('⌘⌥⇧G',recoverShortcut).replaceAll('Option（⌥）','Alt').replaceAll('系统菜单栏里的叶子','任务栏通知区域的小叶子');
+}
 function announce(message, duration=3500) {
   const el=$('#world-notice'); el.textContent=message;el.classList.add('show');
   clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>el.classList.remove('show'),duration);
@@ -51,11 +61,12 @@ function updateNight(value, showNotice=true){
 }
 function scheduleSave(){
   if(saveTimer || !world || !stateReady)return;
+  $('#save-label').textContent='小岛有新变化，正在等待保存…';
   saveTimer=setTimeout(()=>{saveTimer=null;saveNow();},2200);
 }
 function snapshot(){return {schemaVersion:2,savedAt:Date.now(),world:demoBackup||world.serialize(),companion:companion?.serialize(),focus:focusSession?.serialize(),resources:{...resources},rewardedSessions:[...rewardedSessions].slice(-120)};}
 async function saveNow(){
-  if(!stateReady||!world)return;
+  if(!stateReady||!world)return {ok:false,error:'花园尚未准备好保存'};
   if(saveInFlight){scheduleSave();return saveInFlight;}
   saveInFlight=Promise.resolve().then(async()=>{
     try{
@@ -63,7 +74,8 @@ async function saveNow(){
       if(window.desktopWorld?.saveState){const result=await window.desktopWorld.saveState(data,{baseRevision:saveRevision});if(!result.ok)throw new Error(result.error||'保存失败');saveRevision=result.revision;}
       else localStorage.setItem(storageKey,JSON.stringify(data));
       $('#save-label').textContent='小岛的变化，已经悄悄存好';
-    }catch(error){$('#save-label').textContent='存档未写入，请留意磁盘空间';announce('暂时无法写入存档，当前小岛仍可继续玩。',6000);console.warn('Save failed',error.message);}
+      return {ok:true};
+    }catch(error){$('#save-label').textContent='存档未写入，请留意磁盘空间';announce('暂时无法写入存档，当前小岛仍可继续玩。',6000);console.warn('Save failed',error.message);return {ok:false,error:error.message};}
   }).finally(()=>{saveInFlight=null;});return saveInFlight;
 }
 function updateStats(stats){
@@ -79,12 +91,15 @@ function onWorldEvent(event){
   gardenAudio?.chime(event.type||'seed');dismissNote();scheduleSave();
 }
 function runAction(action, value, source='phone'){
-  if(!world)return;
+  if(!world||!stateReady)return {ok:false,error:'小岛正在苏醒，请稍后再试'};
+  if(demoRunning)return {ok:false,error:'电脑正在演示，请等演示结束后再互动'};
   const data={source}; if(Number.isFinite(value))data.value=value;
+  let result={ok:true};
   if(action==='tide' && Number.isFinite(value)){world.setTide(value);$('#tide-range').value=String(value*100);}
   else if(action==='fireflies'){updateNight(true,false);world.impulse('fireflies',data);}
-  else world.impulse(action,data);
+  else result=world.impulse(action,data);
   gardenAudio?.chime(action);dismissNote();scheduleSave();
+  return result||{ok:true};
 }
 function command(action,data={}){
   if(!world)return;
@@ -98,12 +113,13 @@ function command(action,data={}){
   if(action==='notice'){announce(data.message);return;}
   if(action==='resume'){return;}
   if(action==='prepare-quit'){
-    (async()=>{clearTimeout(saveTimer);saveTimer=null;stopSpaceWind();mic?.stop();if(saveInFlight)await saveInFlight;await saveNow();await window.desktopWorld?.ackQuit?.(data.requestId);})();return;
+    (async()=>{clearTimeout(saveTimer);saveTimer=null;stopSpaceWind();mic?.stop();if(saveInFlight)await saveInFlight;const result=await saveNow();await window.desktopWorld?.ackQuit?.(data.requestId,result?.ok===true);})();return;
   }
   if(['explore','wind','rain','seed','food','tide'].includes(action)&&data.selectTool){selectTool(action);toggleTools(true);return;}
   if(action==='keyboard-rain'){world.impulse(action,data);return;}
   if(action==='compost'){world.impulse('compost',data);return;}
-  world.impulse(action,data);scheduleSave();
+  if(demoRunning)stopDemo();
+  const result=world.impulse(action,data);scheduleSave();return result;
 }
 function toggleTools(force){
   const visible=typeof force==='boolean'?force:!document.body.classList.contains('tools-open');document.body.classList.toggle('tools-open',visible);clearTimeout(toolsTimer);
@@ -116,7 +132,7 @@ function stopDemo(notify=false){
   if(notify)announce('把小岛交还给你。');
 }
 function startDemo(){
-  stopDemo();dismissNote();demoBackup=world.serialize();world.setDemoMode?.(true);demoRunning=true;$('#demo-button').disabled=true;$('#demo-status').hidden=false;
+  stopDemo();stopSpaceWind();mic?.stop();dismissNote();demoBackup=world.serialize();world.clearTransientState();world.setDemoMode?.(true);demoRunning=true;$('#demo-button').disabled=true;$('#demo-status').hidden=false;
   updateNight(false,false);selectTool('explore');
   const stages=[
     [0,'演示花园 · 第 1 阶段：萌芽',()=>world.impulse('demo-stage',{stage:0})],
@@ -146,31 +162,43 @@ async function toggleSound(){
 async function prepareInvite(){
   try{
     const response=await fetch('/api/info');if(!response.ok)throw new Error('server');
-    const info=await response.json();inviteUrl=info.phoneUrl;$('#phone-url').value=inviteUrl;
-    const qr=$('#phone-qr');$('#qr-status').hidden=false;qr.hidden=false;
+    const info=await response.json(),select=$('#invite-network'),previous=select.value;
+    select.replaceChildren();
+    for(const network of info.networks||[]){
+      const option=document.createElement('option');option.value=network.address;option.textContent=`${network.name} · ${network.address}`;select.append(option);
+    }
+    if(!select.options.length){const option=document.createElement('option');option.value='';option.textContent='未找到局域网，请连接 Wi-Fi 后刷新';select.append(option);}
+    if([...select.options].some(o=>o.value===previous))select.value=previous;
+    const address=select.value,url=new URL(info.phoneUrl);if(address)url.hostname=address;
+    inviteUrl=url.href;$('#phone-url').value=inviteUrl;
+    const qr=$('#phone-qr');$('#qr-status').hidden=false;$('#qr-status').textContent='正在准备邀请…';qr.hidden=false;
     qr.onload=()=>{$('#qr-status').hidden=true;};
     qr.onerror=()=>{qr.hidden=true;$('#qr-status').hidden=false;$('#qr-status').textContent='复制下方地址，在手机浏览器打开';};
-    qr.src=`/api/qr?t=${Date.now()}`;
-    $('#connection-label').textContent='小岛已就绪 · 等待朋友送来一阵风';
-    if(inviteUrl.includes('127.0.0.1')||inviteUrl.includes('localhost'))$('#network-note').textContent='还没有找到局域网地址。请让电脑连上 Wi-Fi，再重新打开邀请面板。';
-    else if(info.addresses?.length>1)$('#network-note').textContent='手机和电脑需在同一 Wi-Fi。若扫码不通，连接同一个手机热点后重新打开此面板。';
+    qr.src=`/api/qr?${new URLSearchParams({...(address?{address}:{}),t:String(Date.now())})}`;
+    $('#connection-label').textContent=info.hostOnline?'小岛已就绪 · 等待朋友送来一阵风':'等待桌面花园连接';
+    $('#network-note').textContent=address?'手机与电脑需在同一 Wi-Fi。扫码不通时，请切换上方地址；Windows 首次联网可能需要允许专用网络访问。':'请连接 Wi-Fi 或手机热点，然后点「刷新」。';
   }catch{
-    $('#phone-qr').hidden=true;$('#qr-status').hidden=false;$('#qr-status').textContent='请通过项目中的「启动息屿.command」启动，以使用手机互动。';
+    $('#phone-qr').hidden=true;$('#qr-status').hidden=false;$('#qr-status').textContent='请打开息屿桌面版，或运行 pnpm start 后重试。';
     $('#connection-label').textContent='互动服务尚未连接';
   }
 }
 function connectEvents(){
-  eventStream=new EventSource('/api/events');
-  const handle=ev=>{
+  let hostId='';
+  eventStream=new EventSource('/api/events?host=1');
+  eventStream.addEventListener('ready',ev=>{try{hostId=JSON.parse(ev.data).hostId||'';}catch{}});
+  eventStream.addEventListener('action',async ev=>{
+    let data,result;
     try{
-      const data=JSON.parse(ev.data);if(!data.action)return;
-      runAction(data.action,data.value,'phone');
-      const labels={wind:'一位朋友送来了一阵风',rain:'一位朋友送来了一场雨',seed:'一位朋友在小岛上种下了新芽',food:'一位朋友给小动物带来了食物',tide:'一位朋友拨动了潮水',fireflies:'一位朋友点亮了萤火'};
-      if(data.action!=='wind'||!window.lastPhoneWind||Date.now()-window.lastPhoneWind>4000){announce(labels[data.action]||'小岛收到了朋友的心意');window.lastPhoneWind=Date.now();}
-      $('#connection-label').textContent='已收到手机互动 · 心意到达小岛';
-    }catch{}
-  };
-  eventStream.onmessage=handle;eventStream.addEventListener('action',handle);
+      data=JSON.parse(ev.data);if(!data.action)return;
+      result=runAction(data.action,data.value,'phone');
+      if(result?.ok!==false){
+        const labels={wind:'朋友送来了一阵风',rain:'朋友送来了一场雨',seed:'朋友在小岛上种下了新芽',food:'朋友给小动物带来了互动点心',tide:'朋友拨动了潮水',fireflies:'朋友点亮了萤火'};
+        if(data.action!=='wind'||!window.lastPhoneWind||Date.now()-window.lastPhoneWind>4000){announce(labels[data.action]||'小岛收到了朋友的心意');window.lastPhoneWind=Date.now();}
+        $('#connection-label').textContent='手机互动已在小岛生效';
+      }
+    }catch{result={ok:false,error:'小岛暂时无法执行这个动作'};}
+    if(data?.id)try{await fetch('/api/ack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:data.id,hostId,ok:result?.ok!==false,error:result?.error})});}catch{}
+  });
   eventStream.addEventListener('audience',ev=>{try{const {count}=JSON.parse(ev.data);$('#connection-label').textContent=count?`${count} 位朋友正与小岛相连`:'小岛已就绪 · 等待朋友送来一阵风';}catch{}});
   eventStream.onerror=()=>{$('#connection-label').textContent='连接暂时中断，正在自动重连…';};
   eventStream.onopen=()=>{$('#connection-label').textContent='互动服务已连接';};
@@ -180,7 +208,7 @@ function quietMode(value){document.body.classList.toggle('quiet',value);$('#rest
 function setDesktopMode(value){
   desktopMode=value;document.body.classList.toggle('desktop-mode',value);document.documentElement.classList.toggle('desktop-mode',value);world?.setDesktopMode?.(value);$('#desktop-button').innerHTML=`${icon('desktop')}${value?'回到窗口':'放到桌面'}`;
   if(!value){ignoringMouse=false;window.desktopWorld?.setIgnoreMouse(false);}
-  if(value)announce('右键小岛打开工具 · 按住 ⌥ 拖动可移动',5000);
+  if(value)announce(`右键小岛打开工具 · 按住 ${dragKey} 拖动可移动 · ${recoverShortcut} 找回`,6500);
 }
 async function init(){
   try{
@@ -208,7 +236,7 @@ async function init(){
     focusSession=new FocusSession({onChange:state=>desktopUI?.updateFocus(state),onRain:event=>command('keyboard-rain',event),onReward:event=>{
       if(rewardedSessions.has(event.sessionId))return;rewardedSessions.add(event.sessionId);resources.water+=3;desktopUI?.updateResources();saveNow();announce('专注完成，小水壶收集了 3 滴水。',5000);
     }});
-    desktopUI=new DesktopUI({command,companion,focus:focusSession,resources,changed:scheduleSave,announce,showDialog,toggleTools,onState:state=>{desktopState=state;if(desktopMode!==(state.desktopMode!==false))setDesktopMode(state.desktopMode!==false);}});
+    desktopUI=new DesktopUI({command,companion,focus:focusSession,resources,isDemo:()=>demoRunning,platform:{recoverShortcut,trayLabel,trashLabel},changed:scheduleSave,announce,showDialog,toggleTools,onState:state=>{desktopState=state;if(desktopMode!==(state.desktopMode!==false))setDesktopMode(state.desktopMode!==false);}});
     try{
       let saved=null;
       if(window.desktopWorld?.loadState){const result=await window.desktopWorld.loadState();if(result.error)announce(`存档提示：${result.error}`,6500);saved=result.state;saveRevision=result.revision||0;}
@@ -237,7 +265,7 @@ async function init(){
     connectEvents();setTimeout(dismissNote,18000);setInterval(scheduleSave,30000);
     if(window.desktopWorld){
       document.body.classList.add('native-app');
-      $('#desktop-button').hidden=false;
+      $('#desktop-button').hidden=true;
       window.desktopWorld.onModeChange?.(mode=>setDesktopMode(typeof mode==='boolean'?mode:mode?.desktopMode??mode?.enabled??false));
       if(window.desktopWorld.getDesktopMode)setDesktopMode(await window.desktopWorld.getDesktopMode());
     }
@@ -254,6 +282,8 @@ $('#sound-button').addEventListener('click',toggleSound);
 $('#mic-button').addEventListener('click',toggleMic);
 $('#guide-button').addEventListener('click',()=>showDialog('#guide-dialog'));
 $('#share-button').addEventListener('click',()=>showDialog('#share-dialog'));
+$('#invite-network').addEventListener('change',prepareInvite);
+$('#refresh-invite').addEventListener('click',prepareInvite);
 $$('[data-close]').forEach(el=>el.addEventListener('click',()=>document.getElementById(el.dataset.close).close()));
 $$('dialog').forEach(dialog=>dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}}));
 $('#copy-link').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(inviteUrl);$('#copy-link').textContent='已复制';setTimeout(()=>$('#copy-link').textContent='复制',2000);}catch{$('#phone-url').select();$('#network-note').textContent='请手动复制上方地址，发到手机浏览器打开。';}});

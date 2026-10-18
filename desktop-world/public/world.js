@@ -115,23 +115,46 @@ export class World {
   setNight(value) { this.night=!!value;this._emit('night',this.night?'夜色降临，萤火虫醒来了。':'天亮了，小岛开始新的一天。'); }
   setWind(amount, source='manual') { const channel=['mic','microphone'].includes(source)?'microphone':source;this.windSources.set(channel,{value:clamp(Number(amount)||0),time:this.time});this.windAt=this.time;this.windSource=source; }
   setTide(value) { this.tide=clamp(Number(value)||0); }
+  clearTransientState() {
+    this.wind=this.windTarget=this.windHold=0;this.windSources.clear();
+    this.rainCloud=this.dragCloud=null;this.rainUntil=this.visualRainUntil=0;
+    this.ripples=[];this.particles=[];this.flyingSeeds=[];this.food=[];
+    this.mouse.down=false;this.mouse.x=this.mouse.y=-100;this.tideStart=null;
+    this.fireflies=this.fireflies.slice(0,33);
+    for(const flower of this.flowers)flower.seeded=false;
+  }
+  nurture() {
+    if(this.demoMode)return {ok:false,error:'先结束演示，再照顾自己的花园。'};
+    const plant=this.flowers.filter(f=>!f.demoPlant&&(f.growthProgress??f.growth)<.8).sort((a,b)=>(a.growthProgress??a.growth)-(b.growthProgress??b.growth))[0];
+    if(!plant)return {ok:false,error:'花园里的植物都已进入最后阶段。先种一颗新种子，水滴会留在水壶里。'};
+    const stage=Math.min(4,Math.floor((plant.growthProgress??plant.growth)*5)+1);
+    plant.growth=plant.growthProgress=stage===4?1:stage/5+.000001;plant.stage=stage;
+    plant.water=Math.max(plant.water||0,30);
+    this._petals(plant.x,plant.y-10,14,'#d8ebac');
+    const name=this.art.plants.find(p=>p.id===plant.speciesId)?.name||'小苗';
+    const message=`这一滴专注，让${name}长到了第 ${stage+1} 阶段。`;
+    this._emit('growth',message,{plantId:plant.id,stage});
+    return {ok:true,plantId:plant.id,stage,message};
+  }
   impulse(action, data={}) {
+    if(action==='nurture')return this.nurture();
     const norm = (v, fallback, size) => Number.isFinite(v) ? (v>=0&&v<=1 ? v*size : v) : fallback;
     let x = norm(data.x,this.art.active?300+this._rand()*130:230+this._rand()*120,W), y=norm(data.y,this.art.active?220+this._rand()*75:270+this._rand()*50,H);
     if(action==='wind') { this.setWind(data.amount ?? data.value ?? .95,data.source||'guest');this.windHold=this.time+(data.duration||2.3);this._releaseSeeds(5);this._emit('wind','风来了，蒲公英飞向新的地方。'); }
     else if(action==='rain'||action==='water') { this.rainCloud={x:clamp(x,105,530),y:clamp(y-100,65,165),w:.85};this.rainUntil=this.time+(data.duration||5);this.rainAffectsGrowth=true;this._emit('rain','一场小雨，正在浇醒花园。'); }
     else if(action==='keyboard-rain'||action==='keyboardRain') { this.visualRainUntil=this.time+clamp(data.duration??.6,.1,2); }
-    else if(action==='seed') { const species=canonicalSpecies(data.speciesId??this.selectedSpecies);if(species==='waterlily'&&!Number.isFinite(data.x)&&!Number.isFinite(data.y)){x=170+this._rand()*40;y=245+this._rand()*15;}this._plant(x,y,false,species); }
+    else if(action==='seed') { const species=canonicalSpecies(data.speciesId??this.selectedSpecies);if(species==='waterlily'&&!Number.isFinite(data.x)&&!Number.isFinite(data.y)){x=170+this._rand()*40;y=245+this._rand()*15;}const ok=this._plant(x,y,false,species);return {ok,error:ok?undefined:'这里暂时不能播种，请在电脑上选择一片空地。'}; }
     else if(action==='food') { this._feed(x,y); }
     else if(action==='tide') { this.setTide(data.amount ?? data.value ?? (this.tide<.6?.9:.15));this._emit('tide',this.tide>.5?'潮水轻轻漫过沙滩。':'潮水退去，贝壳留在岸边。'); }
     else if(action==='fireflies') { this.night=true;for(let i=0;i<14;i++) this.fireflies.push({x:110+this._rand()*420,y:180+this._rand()*150,p:this._rand()*TAU});if(this.fireflies.length>80)this.fireflies.splice(0,this.fireflies.length-80);this._emit('fireflies','你放来了一群萤火虫。'); }
     else if(action==='ripple') { this._ripple(x,y); }
     else if(action==='compost') { const spot=PROP_SPOTS.compost;for(let i=0;i<16;i++)this.particles.push({kind:'petal',x:spot.x+(this._rand()-.5)*18,y:spot.y-21-this._rand()*15,vx:(this._rand()-.5)*16,vy:-10-this._rand()*14,life:1.5+this._rand(),max:2.5,color:i%3===0?'#e8dab0':i%3===1?'#b2c78e':'#d5c2a0'});this._emit('compost','文件已回收，堆肥箱收到了新的养分。'); }
     else if(action==='demo-stage'&&this.demoMode) { const stage=clamp(Math.round(Number(data.stage)||0),0,4);this._demoManualStage=true;if(!this.demoPlant)this.setDemoMode(true);this.demoPlant.growth=this.demoPlant.growthProgress=stage===4?1:(stage+.02)/5;this.demoPlant.stage=stage;const real=this.art.sprites.has(`plant.${this.demoPlant.speciesId}.${stage}`);this._emit('demo-stage',`演示花苗 · 第 ${stage+1} 阶段${real?'':'（本阶段素材待交付）'}`,{stage,realAsset:real}); }
+    return {ok:true};
   }
   getStats() { return {flowers:this.flowers.filter(f=>(f.stage??Math.min(4,Math.floor(f.growth*5)))===4).length,visitors:this.visitors,seeds:this.flyingSeeds.length,night:this.night,tide:Math.round(this.tide*100),plants:this.flowers.length,stages:[0,1,2,3,4].map(stage=>this.flowers.filter(f=>(f.stage??Math.min(4,Math.floor(f.growth*5)))===stage).length),demo:this.demoMode,artReady:this.art.active}; }
   serialize() { return {version:2,savedAt:Date.now(),layout:{island:'island.pond',base:[60,14,520,370]},selectedSpecies:this.selectedSpecies,petState:{...this.petState},flowers:this.flowers.filter(f=>!f.demoPlant).map(f=>({id:f.id,x:f.x,y:f.y,type:f.type,speciesId:canonicalSpecies(f.speciesId)||FLOWER_SPECIES[f.type%6],growth:f.growth,growthProgress:f.growthProgress??f.growth,stage:f.stage??Math.min(4,Math.floor(f.growth*5)),water:f.water||0,p:f.p})),animals:this.animals.map(a=>({id:a.id,type:a.type,x:a.x,y:a.y,bond:a.bond||0})),night:this.night,tide:this.tide,visitors:this.visitors}; }
-  restore(data) { if(!data||![1,2].includes(data.version))return;this.hasRestored=true;this.demoMode=false;this.demoPlant=null;this._demoManualStage=false;this.setSelectedSpecies(data.selectedSpecies??null);if(data.petState)this.setPetState(data.petState);if(Array.isArray(data.flowers))this.flowers=data.flowers.slice(0,220).filter(f=>Number.isFinite(f.x)&&Number.isFinite(f.y)&&f.x>=0&&f.x<=W&&f.y>=0&&f.y<=H).map(f=>{const type=clamp(Math.round(f.type||0),0,5),progress=clamp(Number(f.growthProgress??f.growth)||0),species=canonicalSpecies(f.speciesId);return {...this._makePlant(f.x,f.y,type,progress),id:typeof f.id==='string'?f.id:`plant-${this._plantId++}`,speciesId:SPECIES.includes(species)?species:FLOWER_SPECIES[type],p:Number(f.p)||0,water:clamp(Number(f.water)||0,0,300)};});if(Array.isArray(data.animals)&&data.animals.some(a=>a.type==='cat'))this.animals=data.animals.slice(0,12).filter(a=>['cat','dog','bird','squirrel','rabbit','duck'].includes(a.type)).map((a,i)=>({id:a.id,type:a.type,x:Number(a.x)||350,y:Number(a.y)||270,homeX:Number(a.x)||350,homeY:Number(a.y)||270,targetX:Number(a.x)||350,targetY:Number(a.y)||270,bond:Math.max(0,Number(a.bond)||0),dir:1,phase:i,wait:2,state:'idle',hop:0}));this.night=!!data.night;this.tide=clamp(Number(data.tide)||0);this.visitors=Math.max(0,Number(data.visitors)||0);if(this.art.active)this._adaptLayout(); }
+  restore(data) { if(!data||![1,2].includes(data.version))return;this.clearTransientState();this.hasRestored=true;this.demoMode=false;this.demoPlant=null;this._demoManualStage=false;this.setSelectedSpecies(data.selectedSpecies??null);if(data.petState)this.setPetState(data.petState);if(Array.isArray(data.flowers))this.flowers=data.flowers.slice(0,220).filter(f=>Number.isFinite(f.x)&&Number.isFinite(f.y)&&f.x>=0&&f.x<=W&&f.y>=0&&f.y<=H).map(f=>{const type=clamp(Math.round(f.type||0),0,5),progress=clamp(Number(f.growthProgress??f.growth)||0),species=canonicalSpecies(f.speciesId);return {...this._makePlant(f.x,f.y,type,progress),id:typeof f.id==='string'?f.id:`plant-${this._plantId++}`,speciesId:SPECIES.includes(species)?species:FLOWER_SPECIES[type],p:Number(f.p)||0,water:clamp(Number(f.water)||0,0,300)};});if(Array.isArray(data.animals)&&data.animals.some(a=>a.type==='cat'))this.animals=data.animals.slice(0,12).filter(a=>['cat','dog','bird','squirrel','rabbit','duck'].includes(a.type)).map((a,i)=>({id:a.id,type:a.type,x:Number(a.x)||350,y:Number(a.y)||270,homeX:Number(a.x)||350,homeY:Number(a.y)||270,targetX:Number(a.x)||350,targetY:Number(a.y)||270,bond:Math.max(0,Number(a.bond)||0),dir:1,phase:i,wait:2,state:'idle',hop:0}));this.night=!!data.night;this.tide=clamp(Number(data.tide)||0);this.visitors=Math.max(0,Number(data.visitors)||0);this.nightMix=this.night?1:0;this.tideCurrent=this.tide;if(this.art.active)this._adaptLayout(); }
   reset() { this.art.active?this._initArt():this._init();this.night=false;this.tide=.28;this.windTarget=0;this.windSources.clear();this.food=[];this.flyingSeeds=[];this.particles=[];this.visitors=0;this._emit('reset','新的小岛，等你来照顾。'); }
   destroy() { this.dead=true;cancelAnimationFrame(this.frame);this.resizeObserver.disconnect();this.canvas.removeEventListener('pointerdown',this._pointerDown);this.canvas.removeEventListener('pointermove',this._pointerMove);this.canvas.removeEventListener('pointerup',this._pointerUp);this.canvas.removeEventListener('pointercancel',this._pointerUp);this.canvas.removeEventListener('pointerleave',this._pointerLeave); }
   _emit(type,message,detail={}) { this.onEvent({...detail,type,message}); }

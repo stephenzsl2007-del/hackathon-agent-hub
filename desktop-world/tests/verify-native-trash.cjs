@@ -5,6 +5,11 @@ const path = require('node:path');
 const os = require('node:os');
 const crypto = require('node:crypto');
 const { FileRecycle } = require('../desktop/native-services.cjs');
+if (process.platform !== 'darwin') {
+ console.error('此脚本仅验证 macOS ~/.Trash；Windows 请使用 npm test 和人工回收站验收。');
+ app.exit(1);
+ return;
+}
 app.setName('息屿原生回收验证');
 app.whenReady().then(async () => {
  const report={checkedAt:new Date().toISOString(),nativeOperation:'Electron shell.trashItem',testOnly:true};
