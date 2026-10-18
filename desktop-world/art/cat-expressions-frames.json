@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "sheet": "cat-expressions-v1.png",
+  "imageSize": [
+    1536,
+    1024
+  ],
+  "facing": "right",
+  "proposedWorldScale": 0.07,
+  "measurement": {
+    "rectMethod": "Measured alpha > 10 subject bounds plus 2 px padding; not uniform grid cuts.",
+    "anchorMethod": "y = bottom edge of alpha > 127 subject. x = average x of the top 5 rows of the body back ridge in a visually selected torso region, rounded. This projects a stable torso landmark to the ground rather than following a moving paw.",
+    "alphaRange": [
+      0,
+      254
+    ],
+    "sourcePngUnmodified": true
+  },
+  "frames": [
+    {
+      "index": 0,
+      "rect": [
+        167,
+        74,
+        491,
+        410
+      ],
+      "anchorPx": [
+        180,
+        407
+      ],
+      "anchorSourcePx": [
+        347,
+        481
+      ],
+      "backTopSourcePx": 221,
+      "durationMs": 150,
+      "observation": "站立睁眼；四足位置固定。"
+    },
+    {
+      "index": 1,
+      "rect": [
+        890,
+        75,
+        491,
+        408
+      ],
+      "anchorPx": [
+        180,
+        406
+      ],
+      "anchorSourcePx": [
+        1070,
+        481
+      ],
+      "backTopSourcePx": 221,
+      "durationMs": 150,
+      "observation": "同姿势闭眼弯弧，脸/身体/脚底稳定。"
+    },
+    {
+      "index": 2,
+      "rect": [
+        156,
+        541,
+        562,
+        402
+      ],
+      "anchorPx": [
+        189,
+        398
+      ],
+      "anchorSourcePx": [
+        345,
+        939
+      ],
+      "backTopSourcePx": 685,
+      "durationMs": 150,
+      "observation": "低头、闭嘴；身体站位保持，头部下探。"
+    },
+    {
+      "index": 3,
+      "rect": [
+        881,
+        541,
+        562,
+        401
+      ],
+      "anchorPx": [
+        189,
+        398
+      ],
+      "anchorSourcePx": [
+        1070,
+        939
+      ],
+      "backTopSourcePx": 685,
+      "durationMs": 150,
+      "observation": "同低头姿势，嘴巴微张、眼睛弯弧；身体稳定。"
+    }
+  ],
+  "status": "passed_for_idle_blink_eat",
+  "eligibleForRuntime": true,
+  "inspection": {
+    "character": "Consistent warm orange tabby with cream muzzle/chest/paws and the same striped tail.",
+    "idleBlink": "Pass: two matched standing poses with a clear open-eye / closed-eye change.",
+    "eat": "Pass: two matched head-down poses with closed-mouth / tiny open-mouth nibble. This is a short stylized nibble loop, not a full chew animation.",
+    "anchorStability": "Back ridge ground projections differ by about 2 px within pairs; ground y is stable after anchoring.",
+    "scaleCompatibility": "Body back-to-ground height is 254–260 source px; walk-v2 is 259–266 source px. Difference is under 5%, so a shared worldScale 0.07 is reasonable. Do not use walk-v1 source scale without separate scale adaptation.",
+    "limitations": "No actual food object or long eating sequence is included. Transition from upright idle to head-down eat is a pose change; gameplay may add a brief hold, but must not call translation a new animation frame."
+  },
+  "states": {
+    "idle": {
+      "loop": true,
+      "frameIndices": [
+        0
+      ],
+      "durationMs": [
+        1000
+      ]
+    },
+    "blink": {
+      "loop": false,
+      "frameIndices": [
+        0,
+        1,
+        0
+      ],
+      "durationMs": [
+        80,
+        140,
+        140
+      ]
+    },
+    "eat": {
+      "loop": true,
+      "frameIndices": [
+        2,
+        3
+      ],
+      "durationMs": [
+        220,
+        180
+      ]
+    }
+  },
+  "browserReview": {
+    "status": "passed",
+    "url": "http://127.0.0.1:4181/assets/pixel-world/animations/preview.html",
+    "manifest": "manifest.json",
+    "worldScale": 0.07,
+    "idleTimingMs": [
+      1800,
+      140
+    ],
+    "eatTimingMs": [
+      220,
+      180
+    ],
+    "checks": [
+      "Both states load with correct source rectangles and real transparency on checkerboard.",
+      "Idle eye shapes clearly switch while torso, feet and tail stay stable.",
+      "Eating closed/open mouth states are distinct; torso and sole baseline remain stable.",
+      "Source frame rectangles do not clip nose/tail/paws.",
+      "Preview asymmetric-anchor layout was fixed; full subject fits both enlarged stage and static cards."
+    ],
+    "screenshots": [
+      "art/cat-expressions-preview.png",
+      "art/cat-eat-preview.png"
+    ],
+    "runtimeDimensionsLogicalPx": {
+      "idle": [
+        34,
+        28
+      ],
+      "eat": [
+        39,
+        28
+      ]
+    }
+  }
+}

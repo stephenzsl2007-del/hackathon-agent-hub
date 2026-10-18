@@ -18,6 +18,9 @@ contextBridge.exposeInMainWorld('desktopWorld', {
   resetBounds: () => ipcRenderer.invoke('world:reset-bounds'),
   resizeGarden: factor => ipcRenderer.invoke('world:resize', factor),
   moveGarden: delta => ipcRenderer.invoke('world:move', delta),
+  finishMove: () => ipcRenderer.invoke('world:finish-move'),
+  dragDebugEnabled: process.argv.includes('--xiyu-drag-debug'),
+  reportDragDebug: payload => ipcRenderer.invoke('world:drag-debug', payload),
   showContextMenu: () => ipcRenderer.invoke('world:context-menu'),
   prepareFiles: files => {
     if (!Array.isArray(files) || files.length > 30) return Promise.resolve({ ok: false, error: '一次最多选择 30 个文件。', items: [] });

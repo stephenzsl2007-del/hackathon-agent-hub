@@ -1,0 +1,44 @@
+团团动画交接 · 已完成美术验收
+日期：2026-10-18
+
+正式入口：public/assets/pixel-world/animations/manifest.json
+通过动作：idle、eat、walk。rest未制作，保留工程现有静态回退。
+角色cat（团团），默认朝右，原画为animals-atlas.png的cat-orange。
+
+正式素材
+cat-expressions-v1.png：1536×1024 RGBA，idle两帧、eat两帧。
+cat-walk-right-v5.png：2172×724 RGBA，walk四帧，具有真实四肢姿态变化。
+8帧共用worldScale=0.07，不按各帧包围盒单独撑满。
+idle可见宽约34.4世界px，eat头部前伸后约39.3，walk约36×29世界px。
+
+动作与节奏
+idle：睁眼1800ms → 闭眼140ms，循环。
+eat：低头闭嘴220ms → 微张嘴轻咬180ms，循环。
+walk：4帧各150ms，600ms一轮；近侧前腿前伸 → 居中支撑 → 后收恢复 → 抬前。
+walk为4帧风格化行走。第三帧近前爪略高于基线，读作开始离地的恢复相，不称严格后接地姿态。
+步行侧视与停留三分之四视角会随动作切换，没有额外中间过渡帧。
+
+清单合同
+version:1，sheets值为相对PNG路径。
+animals.cat.sheet='cat'使用表情图，states.walk.sheet='catWalk'覆盖为步态图。
+frames[].rect为整图像素坐标，anchorPx为裁切内锚点，durationMs控制时长。
+walk的4帧脚底原图y均为563，anchorPx.y均为424；水平root按背脊投影对齐。
+切图按真实alpha测量，不是假定均分格。源PNG未使用程序修改、裁切或重新采样。
+
+验收证据
+art/cat-expressions-frames.json：idle/eat独立审阅与浏览器复核。
+art/cat-walk-v5-frames.json：四肢身份、边缘、原速/慢放与4→1衔接检查。
+art/animation-qa-report.json：8帧裁切、锚点、alpha、留白、不同像素hash全部通过。
+art/cat-expressions-preview.png、art/cat-eat-preview.png、art/cat-walk-preview.png：预览截图。
+public/assets/pixel-world/animations/preview.html：正式清单逐帧与原尺寸检查。
+candidate-manifest.json只供QA，不作为运行fallback。
+
+版本边界
+walk-v1至v4未通过完整步态验收，保留作可追溯候选，正式manifest均不引用。
+本轮只交团团；兔子与松鼠尚未制作动作帧。
+未修改world.js、app.js、index.html、原图集或工程运行清单。自然移动与原生打包由主编辑负责。
+所有文件已在共享主工作区；主编辑已收到素材合同，最后通过状态另行同步。
+
+生成方式
+全部PNG使用内置image_gen。完整提示词在art/cat-expressions-prompt.txt及cat-walk*-prompt.txt。
+art/animation-provenance.json记录每张PNG的SHA256、提示词与是否正式采用。

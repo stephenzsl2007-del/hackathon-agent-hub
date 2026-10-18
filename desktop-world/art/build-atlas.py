@@ -112,6 +112,13 @@ def main():
             manifest['plants'][pid]=plant
             for sprite in stages:
                 sid=sprite.pop('id');manifest['sprites'][sid]=sprite
+    long_island_path=ASSETS/'island-pond-long-v1.json'
+    if long_island_path.exists():
+        long_island=json.loads(long_island_path.read_text())
+        iw,ih=long_island['imageSize']
+        manifest['images']['islandLong']={'file':long_island['file'],'width':iw,'height':ih,'alpha':True}
+        manifest['sprites'][long_island['artistSpriteId']]={'name':long_island['name'],'image':'islandLong','rect':long_island['sourceRect'],'anchor':long_island['anchorPixels'],'kind':'island'}
+        manifest['notes'].append('樱花池塘岛已替换为横向长条版本；原图保留，见island-pond-long-v1.json。')
     for sid,s in manifest['sprites'].items():
         img=manifest['images'][s['image']];x,y,w,h=s['rect'];ax,ay=s['anchor']
         assert 0<=x<x+w<=img['width'] and 0<=y<y+h<=img['height'],sid

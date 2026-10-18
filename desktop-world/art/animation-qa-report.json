@@ -1,0 +1,156 @@
+{
+  "manifestVersion": 1,
+  "approvedStates": [
+    {
+      "animal": "cat",
+      "state": "idle",
+      "frames": 2,
+      "distinctPixelFrames": true,
+      "worldScale": 0.07
+    },
+    {
+      "animal": "cat",
+      "state": "eat",
+      "frames": 2,
+      "distinctPixelFrames": true,
+      "worldScale": 0.07
+    },
+    {
+      "animal": "cat",
+      "state": "walk",
+      "frames": 4,
+      "distinctPixelFrames": true,
+      "worldScale": 0.07
+    }
+  ],
+  "checks": [
+    {
+      "state": "idle",
+      "frame": 0,
+      "rectInBounds": true,
+      "anchorInBounds": true,
+      "transparentBackground": true,
+      "subjectMarginPx": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "rgbaSHA256": "aae203069b7573e5b149daea6e2ac8849686607693cac92cb21a7d0cc1a5b1cd"
+    },
+    {
+      "state": "idle",
+      "frame": 1,
+      "rectInBounds": true,
+      "anchorInBounds": true,
+      "transparentBackground": true,
+      "subjectMarginPx": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "rgbaSHA256": "110c8fe0032acfc46fb6a90a8ec40b623eb34d8f509ce7ef207ae343041f0b80"
+    },
+    {
+      "state": "eat",
+      "frame": 0,
+      "rectInBounds": true,
+      "anchorInBounds": true,
+      "transparentBackground": true,
+      "subjectMarginPx": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "rgbaSHA256": "87c580c84e4a5c2212cf356a931b5c31a2c61a904925f7ca6ea94de6d3a9f051"
+    },
+    {
+      "state": "eat",
+      "frame": 1,
+      "rectInBounds": true,
+      "anchorInBounds": true,
+      "transparentBackground": true,
+      "subjectMarginPx": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "rgbaSHA256": "57697a3456b831e405456684d1c98a5657e5d682eec69741d87f299e042fb5ed"
+    },
+    {
+      "state": "walk",
+      "frame": 0,
+      "rectInBounds": true,
+      "anchorInBounds": true,
+      "transparentBackground": true,
+      "subjectMarginPx": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "rgbaSHA256": "1c2eae011bf285d2316adbfa325b440c57ae7a6b2f78a825d2921d43fbb2b4c1"
+    },
+    {
+      "state": "walk",
+      "frame": 1,
+      "rectInBounds": true,
+      "anchorInBounds": true,
+      "transparentBackground": true,
+      "subjectMarginPx": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "rgbaSHA256": "b4ca5255387c221059d5fdb072f6026a19ec64f5470407b1d99a05845a2f90b8"
+    },
+    {
+      "state": "walk",
+      "frame": 2,
+      "rectInBounds": true,
+      "anchorInBounds": true,
+      "transparentBackground": true,
+      "subjectMarginPx": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "rgbaSHA256": "067a66913b674f1c97d4ba4f239624725c34aa2a41c7cfc2071c0f17db420500"
+    },
+    {
+      "state": "walk",
+      "frame": 3,
+      "rectInBounds": true,
+      "anchorInBounds": true,
+      "transparentBackground": true,
+      "subjectMarginPx": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "rgbaSHA256": "cc78e3762488dad87f40de6afa01c75780a4151c753a69ef005785518c668490"
+    }
+  ],
+  "sourcePngEdits": false,
+  "tool": "built-in image_gen",
+  "missingStates": [
+    "rest"
+  ],
+  "status": "passed",
+  "visualReviewFiles": [
+    "cat-expressions-frames.json",
+    "cat-walk-v5-frames.json"
+  ],
+  "limitations": [
+    "Walk is a four-frame stylized cycle; frame 3 is toe-off/recovery.",
+    "Idle/eat versus walk change from three-quarter view to side view.",
+    "Rest is intentionally missing; existing static fallback applies.",
+    "No in-between upright-to-head-down transition frames."
+  ]
+}

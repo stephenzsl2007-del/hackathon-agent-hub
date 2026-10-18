@@ -8,13 +8,14 @@
   <title>息屿 · 你的桌面小世界</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./pixel-ui.css">
 </head>
 <body>
   <div class="app-shell">
     <header class="site-header">
       <a href="./" class="brand" aria-label="息屿首页">
         <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" shape-rendering="crispEdges"><path fill="#ced8a9" d="M4 21h24v4H4zM8 25h16v3H8z"/><path fill="#5e805c" d="M15 8h3v14h-3zM7 8h8v4H7zM10 12h7v4h-7zM18 5h8v5h-8zM17 10h6v4h-6z"/><path fill="#9db881" d="M8 5h5v3H8zM21 3h4v2h-4z"/></svg>
-        <span class="brand-name">息屿<span>LITTLE WORLD</span></span>
+        <span class="brand-name">息屿<span>桌面小世界</span></span>
       </a>
       <p class="header-poem">一方桌面，万物慢慢生长。</p>
       <nav class="header-actions" aria-label="世界设置">
@@ -27,7 +28,17 @@
     </header>
 
     <main class="world-frame" id="world-frame">
-      <canvas id="world" aria-label="可互动的像素小岛。使用下方工具给植物送风、降雨、播种、投喂动物，或拨动潮汐。" tabindex="0"></canvas>
+      <canvas id="world" aria-label="可互动的像素小岛。点布告栏选择落雨、播种、投喂或专注。漫游时可以直接拖动小岛。" tabindex="0"></canvas>
+      <div class="island-entry" aria-label="花园入口">
+        <button id="board-toggle" class="wood-sign" aria-haspopup="dialog" aria-controls="board-dialog" aria-expanded="false" title="打开布告栏：落雨、播种、投喂和专注"><span data-icon="seed"></span><span>布告栏<small>花园工具</small></span></button>
+        <button id="island-drag-handle" class="island-drag-handle" title="按住这里拖动小岛" aria-label="按住并拖动，调整小岛在桌面上的位置"><span class="drag-grip" aria-hidden="true">⠿</span><span>拖动小岛</span></button>
+      </div>
+      <div id="active-tool-strip" class="active-tool-strip" hidden role="region" aria-label="当前花园工具">
+        <div class="active-tool-copy"><strong id="active-tool-name">漫游</strong><span id="active-tool-hint">轻点池塘，和小动物打个招呼。</span></div>
+        <select id="quick-seed-species" aria-label="选择植物" hidden><option value="">随缘 · 一朵小花</option></select>
+        <input id="quick-tide-range" type="range" min="0" max="100" value="28" hidden aria-label="池塘水位">
+        <button id="finish-tool" class="pixel-small-button">完成 <span aria-hidden="true">✓</span></button>
+      </div>
       <div class="world-topline">
         <div class="world-label"><span class="live-dot"></span><span id="season-label">晴昼 · 小岛正在呼吸</span></div>
         <div class="topline-actions">
@@ -37,7 +48,7 @@
         </div>
       </div>
       <div class="opening-note" id="opening-note">
-        <span class="eyebrow">A SMALL PLACE TO JUST BE</span>
+        <span class="eyebrow">留一点时间，给自己</span>
         <h1>让世界，<br>慢下来一点。</h1>
         <p>送一口风，等一朵花开。</p>
       </div>
@@ -45,13 +56,13 @@
       <div class="companion-card" id="companion-card">
         <div class="companion-title"><span class="companion-face">ᵔᴥᵔ</span><strong id="pet-name">团团</strong><span id="pet-stage">幼崽</span><span class="pet-days" id="pet-days">陪伴第 1 天</span></div>
         <div class="satiety-row"><span>饱食度</span><span class="satiety-track"><i id="satiety-fill"></i></span><b id="satiety-value">70</b></div>
-        <p id="feed-tip">把文件拖到小岛上，给团团喂一点灵感。</p>
+        <p id="feed-tip">整理不需要的文件，确认回收后获得点心。</p>
       </div>
       <div class="file-drop-overlay" id="file-drop-overlay" hidden><span data-icon="carrot"></span><strong>松开，先检查这一批文件</strong><span>确认后移入废纸篓 · 成功回收才获得饲料</span></div>
       <div class="demo-status" id="demo-status" hidden><span class="live-dot"></span><span id="demo-message"></span><button id="demo-stop">结束</button></div>
 
       <div class="bottom-ui">
-        <div class="interaction-hint"><span class="hint-dot"></span><span id="tool-hint">轻点海面泛起涟漪 · 拖动白云，给花园下一场雨</span></div>
+        <div class="interaction-hint"><span class="hint-dot"></span><span id="tool-hint">轻点池塘泛起涟漪 · 点击小动物，和它打个招呼</span></div>
         <div class="controls-row">
           <div class="tool-dock" role="toolbar" aria-label="花园互动工具">
             <button class="tool active" data-tool="explore" aria-pressed="true"><span data-icon="hand"></span><span>漫游</span><kbd>1</kbd></button>
@@ -75,22 +86,53 @@
   </div>
   <button id="restore-ui" hidden aria-label="显示界面">显示界面 <kbd>H</kbd></button>
 
-  <dialog id="feed-dialog" class="panel-dialog feed-dialog">
-    <button class="close-dialog" data-close="feed-dialog" aria-label="关闭文件堆肥">×</button>
-    <span class="eyebrow">A LITTLE LESS CLUTTER</span><h2>整理一点，<br>给小岛一份点心。</h2>
-    <p class="panel-description">把不再需要的文件拖到小岛，或在这里选择。确认后，文件会移入系统废纸篓；每个成功回收的文件得到 1 份饲料。</p>
-    <input type="file" id="compost-files" multiple hidden>
-    <button id="choose-compost-files" class="secondary-button">选择要回收的文件…</button>
-    <div id="compost-list" class="compost-list" aria-live="polite"></div>
-    <p id="compost-status" class="panel-status" role="status">不会自动扫描文件。只有你在这里确认的文件才会被处理。</p>
-    <div class="dialog-actions"><button id="open-trash" class="secondary-button">打开废纸篓</button><button id="confirm-compost" class="primary-button" disabled>确认移入废纸篓</button></div>
-    <div class="resource-summary"><span>饲料篮 <b id="food-count">0</b> 份</span><span>小水壶 <b id="water-count">0</b> 滴</span></div>
-    <button id="give-food" class="secondary-button full-width">投放 1 份饲料到草地</button>
+  <dialog id="board-dialog" class="panel-dialog board-dialog" aria-labelledby="board-title">
+    <header class="panel-header"><span class="eyebrow">今天，想和小岛做点什么？</span><h2 id="board-title">息屿布告栏</h2><button class="close-dialog" data-close="board-dialog" aria-label="关闭布告栏">×</button></header>
+    <div class="panel-body board-body">
+      <div class="board-main-actions">
+        <button class="board-card" data-board-action="rain"><span class="board-card-icon" data-icon="rain"></span><span><strong>借一朵云</strong><small>点池塘看水波，给小苗浇水</small><em>落雨 · 可按住、拖动</em></span><b aria-hidden="true">›</b></button>
+        <button class="board-card" data-board-action="seed"><span class="board-card-icon" data-icon="seed"></span><span><strong>种下喜欢</strong><small>选一种植物，在草地种下</small><em>播种 · 24 种植物</em></span><b aria-hidden="true">›</b></button>
+        <button class="board-card" data-board-action="feed"><span class="board-card-icon" data-icon="carrot"></span><span><strong>给团团点心</strong><small>整理文件，换一份动物饲料</small><em>回收前会请你确认</em></span><b aria-hidden="true">›</b></button>
+        <button class="board-card" data-board-action="focus"><span class="board-card-icon"><svg class="pixel-icon" viewBox="0 0 24 24" aria-hidden="true" shape-rendering="crispEdges"><path d="M5 2h14v3h-2v4h-3v6h3v4h2v3H5v-3h2v-4h3V9H7V5H5zm5 3v3h4V5zm0 11v3h4v-3z"/></svg></span><span><strong>安静专注</strong><small>完成一段时间，收集 3 滴水</small><em>也可以从 1 分钟开始</em></span><b aria-hidden="true">›</b></button>
+      </div>
+      <div class="board-section-label"><span>还有这些小乐趣</span></div>
+      <div class="board-small-actions" role="toolbar" aria-label="更多花园功能">
+        <button data-board-action="wind"><span data-icon="wind"></span>送一阵风</button><button data-board-action="mic"><span data-icon="mic"></span>吹一口气</button><button data-board-action="night"><span data-icon="moon"></span>切换昼夜</button><button data-board-action="sound" aria-pressed="false"><span data-icon="muted"></span><span>开启环境音</span></button><button data-board-action="share"><span data-icon="phone"></span>邀请朋友</button><button data-board-action="demo"><span data-icon="spark"></span>看看生长</button><button data-board-action="guide"><span data-icon="hand"></span>玩法说明</button><button data-board-action="settings"><span data-icon="desktop"></span>桌面设置</button><button data-board-action="tools"><span data-icon="tide"></span>全部工具</button>
+      </div>
+      <p class="board-footnote">随时点小木牌回来 · 漫游时直接拖动小岛<br>使用其他工具时拖动手柄，或按住 Option 拖动</p>
+    </div>
+  </dialog>
+
+  <dialog id="feed-dialog" class="panel-dialog feed-dialog" aria-labelledby="feed-title">
+    <header class="panel-header"><span class="eyebrow">选文件 → 确认回收 → 喂团团</span><h2 id="feed-title">给团团准备点心</h2><button class="close-dialog" data-close="feed-dialog" aria-label="关闭文件堆肥，未确认的文件不会被处理">×</button></header>
+    <div class="panel-body">
+      <section class="compost-step active" id="compost-step-choose"><h3><span class="step-number">1</span>选择不需要的文件</h3>
+        <input type="file" id="compost-files" multiple hidden>
+        <div id="compost-empty" class="compost-empty"><span data-icon="carrot"></span><p>还没有选择文件<small>拖到小岛上，或点下方按钮。只选择你准备回收的文件。</small></p></div>
+        <button id="choose-compost-files" class="secondary-button">选择要回收的文件…</button>
+        <div id="compost-list" class="compost-list" aria-live="polite"></div>
+        <button class="feed-practice-button" data-feed-practice><strong>先看投喂动画 <span aria-hidden="true">›</span></strong><small>只演示，不处理文件、不消耗饲料</small></button>
+      </section>
+      <section class="compost-step" id="compost-step-confirm"><h3><span class="step-number">2</span>确认移入系统废纸篓</h3>
+        <p id="compost-status" class="panel-status" role="status">不会自动扫描文件。只有你确认的这一批文件才会被处理。</p>
+        <p class="compost-safety">确认前关闭不动文件。确认后会真正移入系统废纸篓；处理中可以关闭面板，但不会撤销回收。</p>
+        <div class="dialog-actions"><button id="open-trash" class="secondary-button">打开废纸篓</button><button id="confirm-compost" class="primary-button" disabled>确认移入废纸篓</button></div>
+      </section>
+      <section class="compost-step" id="compost-step-feed"><h3><span class="step-number">3</span>获得饲料，喂给团团</h3>
+      <section class="feed-pet-status" aria-label="团团成长状态">
+        <span class="feed-pet-portrait" aria-hidden="true"><svg class="pixel-icon" viewBox="0 0 24 24" shape-rendering="crispEdges"><path fill-rule="evenodd" d="M3 3h4v3h10V3h4v15h-3v3H6v-3H3zM5 5v4h3V7H7V5zm12 2v2h2V5h-2zm-10 5v3h3v-3zm7 0v3h3v-3zm-4 5v2h4v-2z"/></svg></span>
+        <div class="feed-pet-details"><div class="feed-pet-heading"><strong id="feed-pet-name">团团</strong><span id="feed-pet-stage">幼崽</span><span class="feed-pet-value">饱食度 <b id="feed-pet-satiety">65</b><small>/100</small></span></div><span class="feed-pet-track" aria-hidden="true"><i id="feed-pet-progress" style="width:65%"></i></span></div>
+      </section>
+        <div class="resource-summary"><span>饲料篮 <b id="food-count">0</b> 份</span><span>小水壶 <b id="water-count">0</b> 滴</span></div>
+        <p class="step-caption">每成功回收 1 个文件，获得 1 份饲料。</p>
+        <button id="give-food" class="primary-button full-width">投放 1 份饲料到草地</button>
+      </section>
+    </div>
   </dialog>
 
   <dialog id="focus-dialog" class="panel-dialog focus-dialog">
-    <button class="close-dialog" data-close="focus-dialog" aria-label="关闭专注面板">×</button>
-    <span class="eyebrow">WORK GENTLY, GROW SLOWLY</span><h2>你忙你的，<br>小岛陪着你。</h2>
+    <header class="panel-header"><span class="eyebrow">这一小段时间，留给眼前的事</span><h2>让小岛陪你专注</h2><button class="close-dialog" data-close="focus-dialog" aria-label="关闭专注面板">×</button></header>
+    <div class="panel-body">
     <p class="panel-description">完成一段专注，为小水壶收集 3 滴水。阅读和思考也算专注，停下打字不会影响计时。</p>
     <div class="focus-clock" id="focus-clock">25:00</div><p class="panel-status" id="focus-state">准备开始</p>
     <label class="focus-duration">专注时长 <select id="focus-minutes"><option value="25">25 分钟</option><option value="10">10 分钟</option><option value="5">5 分钟</option><option value="1">1 分钟 · 快速体验</option></select></label>
@@ -98,45 +140,53 @@
     <label class="focus-note-label">随手记一点<textarea id="focus-note" placeholder="只在本次打开时保留；输入会带来一阵轻雨。" rows="3"></textarea></label>
     <p class="panel-status">当前键盘雨只感知息屿应用内的输入；在其他应用工作时，专注计时照常继续。不会读取或保存按键内容。</p>
     <button id="water-garden" class="secondary-button full-width">用 1 滴水浇花</button>
+    </div>
   </dialog>
 
   <dialog id="settings-dialog" class="panel-dialog settings-dialog">
-    <button class="close-dialog" data-close="settings-dialog" aria-label="关闭花园设置">×</button>
-    <span class="eyebrow">YOUR LITTLE CORNER</span><h2>给花园找个好位置。</h2>
-    <p class="panel-description">右键小岛或点击系统菜单栏里的叶子，可以找回这些操作。完全穿透后，用 ⌘⌥⇧G 恢复交互。</p>
+    <header class="panel-header"><span class="eyebrow">位置、大小与桌面交互</span><h2>给小岛安个家</h2><button class="close-dialog" data-close="settings-dialog" aria-label="关闭花园设置">×</button></header>
+    <div class="panel-body">
+    <p class="panel-description">随时从布告栏回到桌面设置。完全穿透后，用系统菜单栏的叶子或 ⌘⌥⇧G 找回花园。</p>
     <div class="settings-grid"><button id="native-topmost" class="secondary-button">切换置顶</button><button id="native-pass" class="secondary-button">完全鼠标穿透</button><button id="native-smaller" class="secondary-button">缩小一点 −</button><button id="native-larger" class="secondary-button">放大一点 +</button><button id="native-reset" class="secondary-button">恢复默认位置</button><button id="native-hide" class="secondary-button">隐藏花园</button></div>
-    <p class="panel-status">移动：按住 Option（⌥），拖动岛屿；或使用菜单中的移动模式。位置与尺寸会自动记住。</p>
+    <p class="panel-status">漫游时直接拖动小岛；使用其他工具时拖动手柄，或按住 Option（⌥）拖动。位置与尺寸会自动记住。</p>
     <div class="dialog-actions"><button id="settings-help" class="secondary-button">玩法说明</button><button id="settings-share" class="secondary-button">邀请手机互动</button></div>
     <button id="native-quit" class="secondary-button full-width">完全退出息屿</button>
+    </div>
   </dialog>
+
+  <div id="mic-status" class="mic-status" hidden><span class="live-dot"></span><span id="mic-status-label">麦克风已开启</span><button id="mic-stop" aria-label="关闭麦克风">关闭 ×</button></div>
 
   <div id="floating-focus" class="floating-focus" hidden><span data-icon="rain"></span><span id="floating-focus-time"></span></div>
 
   <dialog id="guide-dialog" class="panel-dialog">
-    <button class="close-dialog" data-close="guide-dialog" aria-label="关闭玩法说明">×</button>
-    <span class="eyebrow">MAKE YOURSELF AT HOME</span><h2>这里没有任务，<br>只有一点小小的回应。</h2>
-    <p class="file-guide">把不再需要的文件拖到小岛，检查清单后确认移入系统废纸篓。成功回收才会得到饲料，再投给团团。取消不会改变文件；饱食度和陪伴天数会保存，在真实的日子里它会慢慢长大。</p>
+    <header class="panel-header"><span class="eyebrow">没有打卡，只有一点小回应</span><h2>小岛的相处方式</h2><button class="close-dialog" data-close="guide-dialog" aria-label="关闭玩法说明">×</button></header>
+    <div class="panel-body">
+    <p class="panel-status">移动小岛：漫游时直接拖动小岛；使用其他工具时拖动手柄，或按住 Option（⌥）拖动。</p>
+    <p class="file-guide">把不再需要的文件拖到小岛，检查清单后确认移入系统废纸篓。成功回收才会得到饲料，再投给团团。确认前关闭不会改变文件；已确认的回收会继续。饱食度和陪伴天数会保存，在真实的日子里它会慢慢长大。</p>
     <div class="guide-grid">
       <article><span data-icon="wind"></span><div><h3>把一口气变成风</h3><p>开启麦克风，轻轻吹气。草木随风摇摆，蒲公英飞向远方。也可以选「送风」长按小岛。</p></div></article>
-      <article><span data-icon="rain"></span><div><h3>借一朵云来浇花</h3><p>拖动天空中的白云到花园上方；或选择「落雨」在草地按住，让小苗渐渐开花。</p></div></article>
+      <article><span data-icon="rain"></span><div><h3>借一朵云来浇花</h3><p>选择「落雨」，点池塘会泛起水波，点草地给附近植物浇水。按住持续落雨，拖动改变位置。</p></div></article>
       <article><span data-icon="seed"></span><div><h3>种下今天的颜色</h3><p>选择「播种」，点一处草地。给新芽浇点水，等待它长大。花园会保存在这台设备上。</p></div></article>
       <article><span data-icon="carrot"></span><div><h3>和小生灵做朋友</h3><p>选「投喂」，把食物放到草地上，小动物会跑过来。把光标停一会儿，等蝴蝶靠近。</p></div></article>
-      <article><span data-icon="tide"></span><div><h3>用手指拨动潮水</h3><p>轻点海面泛起涟漪；选择「潮汐」，上下拖动或使用滑杆，看海水漫上沙滩。</p></div></article>
-      <article><span data-icon="moon"></span><div><h3>把夜晚轻轻点亮</h3><p>点右上角月亮切换夜晚。花园亮起萤火，也可以邀请朋友用手机一起送风、降雨。</p></div></article>
+      <article><span data-icon="tide"></span><div><h3>用手指拨动潮水</h3><p>轻点池塘泛起涟漪；选择「潮汐」，上下拖动或使用滑杆，让水面轻轻变化。</p></div></article>
+      <article><span data-icon="moon"></span><div><h3>把夜晚轻轻点亮</h3><p>按 N 或从右键菜单切换昼夜。花园亮起萤火，也可以邀请朋友用手机一起送风、降雨。</p></div></article>
     </div>
-    <div class="dialog-footnote">快捷键：1–6 切换工具 · 空格送风 · N 昼夜 · M 麦克风 · H 隐藏界面 · Esc 关闭面板</div>
+    <div class="dialog-footnote">快捷键：1–6 切换工具 · 空格送风 · N 昼夜 · M 麦克风 · H 打开布告栏 · Esc 关闭面板</div>
     <button class="primary-button" data-close="guide-dialog">去小岛上走走 <span>↗</span></button>
+    </div>
   </dialog>
 
   <dialog id="share-dialog" class="panel-dialog share-dialog">
-    <button class="close-dialog" data-close="share-dialog" aria-label="关闭邀请面板">×</button>
-    <span class="eyebrow">A LITTLE WIND, TOGETHER</span><h2>你送来的风，<br>会吹到我的小岛。</h2>
-    <p class="share-description">手机和这台电脑连上同一个 Wi-Fi，扫码进入。<br>大家可以一起送风、浇水、投喂和唤起萤火。</p>
+    <header class="panel-header"><span class="eyebrow">朋友的手机，也能轻轻加入</span><h2>一起给小岛送风</h2><button class="close-dialog" data-close="share-dialog" aria-label="关闭邀请面板">×</button></header>
+    <div class="panel-body">
+    <p class="share-description">手机和这台电脑连上同一个 Wi-Fi，扫码进入。<br>大家可以一起送风、浇水、播种和唤起萤火。</p>
     <div class="qr-wrap"><img id="phone-qr" alt="手机互动二维码" width="180" height="180"><span id="qr-status">正在准备邀请…</span></div>
     <div class="invite-link"><input id="phone-url" readonly aria-label="手机互动地址"><button id="copy-link">复制</button></div>
     <p class="network-note" id="network-note">如果现场 Wi-Fi 隔离设备，可以让电脑和手机连接同一个手机热点。</p>
     <div class="connection-state"><span class="live-dot"></span><span id="connection-label">等待连接</span></div>
+    </div>
   </dialog>
-  <script type="module" src="./app.js"></script>
+  <aside id="local-launch" class="local-launch" hidden><span class="eyebrow">息屿 · 桌面小世界</span><h1>小岛住在桌面上。</h1><p>请在 Finder 中双击「息屿.app」。<br>直接打开这个 HTML 文件无法启动完整花园。</p><p class="launch-path">ChatGPT / ee黑客松 / 息屿.app</p></aside>
+  <script>if(location.protocol==='file:'){document.querySelector('.app-shell').hidden=true;document.getElementById('local-launch').hidden=false;}else{const script=document.createElement('script');script.type='module';script.src='./app.js';document.body.append(script);}</script>
 </body>
 </html>

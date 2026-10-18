@@ -2,33 +2,48 @@
 const { app, BrowserWindow, Menu, ipcMain, globalShortcut, screen, session, Tray, nativeImage, shell, powerMonitor } = require('electron');
 const path = require('node:path');
 const os = require('node:os');
+const fs = require('node:fs');
 const { createWorldServer } = require('../server.cjs');
-const { AtomicStore, FileRecycle, QuitHandshake } = require('./native-services.cjs');
+const { AtomicStore, FileRecycle, QuitHandshake, WINDOW_LAYOUT_VERSION, validWindowBounds, fitWindowBounds, dragWindowBounds, defaultWindowBounds, migrateWindowLayout } = require('./native-services.cjs');
 let win, world, tray, baseURL, windowStore, gardenStore, demoStore, recycler;
-let mode = true, feeding = false, moving = false, partialIgnore = false, shuttingDown = false;
+let mode = true, feeding = false, moving = false, islandDragging = false, partialIgnore = false, shuttingDown = false;
 let windowSaveTimer, displayTimer, quitting;
 const quitHandshake = new QuitHandshake({ timeout: 3000 });
-let settings = { alwaysOnTop: true, mouseMode: 'interactive', bounds: null };
+let settings = { alwaysOnTop: true, mouseMode: 'interactive', bounds: null, layoutVersion: WINDOW_LAYOUT_VERSION };
 const shortcutState = {};
+let dragDebugEnabled = process.argv.includes('--xiyu-drag-debug'), dragDebugPath, dragDebugTimer;
+const dragDebugEvents = [];
+function traceDrag(event, data = {}) {
+  if (!dragDebugEnabled || !dragDebugPath) return;
+  dragDebugEvents.push({ at: Date.now(), event, ...data });
+  if (dragDebugEvents.length > 500) dragDebugEvents.splice(0, dragDebugEvents.length - 500);
+  clearTimeout(dragDebugTimer);
+  dragDebugTimer = setTimeout(() => { fs.promises.writeFile(dragDebugPath, JSON.stringify(dragDebugEvents, null, 2), { mode: 0o600 }).catch(() => {}); }, 100);
+}
+function rendererDragTrace(payload) {
+  if (!dragDebugEnabled || !payload || typeof payload !== 'object') return;
+  const event = ['down','rejected','capture','move','up','cancel','blur','lostpointercapture','pointercancel','native-call','native-finish'].includes(payload.event) ? payload.event : 'unknown';
+  const data = {};
+  for (const key of ['screenX','screenY','clientX','clientY','pointerId','buttons','button','dx','dy']) if (Number.isFinite(payload[key])) data[key] = payload[key];
+  for (const key of ['desktopMode','hasOpenDialog','moveMode','altKey','ctrlKey','metaKey','hit','weather','captured','active']) if (typeof payload[key] === 'boolean') data[key] = payload[key];
+  const values = { phase:['pending','dragging','settling','idle'], tool:['explore','wind','rain','seed','food','tide'], target:['canvas','handle','other'], reason:['no-bridge','target','state','tool','miss','weather','no-tap','invalid-position','forwarded-move','uncaptured-hover','new-down','explicit','escape','hidden','lostpointercapture','pointercancel','blur','error'] };
+  for (const [key, allowed] of Object.entries(values)) if (allowed.includes(payload[key])) data[key] = payload[key];
+  traceDrag(`renderer:${event}`, data);
+}
 app.setName('息屿');
 const single = app.requestSingleInstanceLock();
 if (!single) app.quit();
 
 function defaultBounds() {
   const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
-  const area = display.workArea;
-  const width = Math.round(area.width * .72), height = Math.round(area.height * .64);
-  return { x: area.x + area.width - width - 16, y: area.y + area.height - height - 12, width, height };
+  return defaultWindowBounds(display.workArea);
 }
 function clampBounds(bounds) {
-  const valid = bounds && ['x', 'y', 'width', 'height'].every(key => Number.isFinite(bounds[key]));
-  if (!valid) return defaultBounds();
+  if (!validWindowBounds(bounds)) return defaultBounds();
   const displays = screen.getAllDisplays();
   const intersects = displays.some(({ workArea: a }) => bounds.x + bounds.width > a.x + 60 && bounds.y + bounds.height > a.y + 60 && bounds.x < a.x + a.width - 60 && bounds.y < a.y + a.height - 60);
   const area = (intersects ? screen.getDisplayMatching(bounds) : screen.getPrimaryDisplay()).workArea;
-  const width = Math.round(Math.max(Math.min(560, area.width), Math.min(bounds.width, area.width)));
-  const height = Math.round(Math.max(Math.min(360, area.height), Math.min(bounds.height, area.height)));
-  return { width, height, x: Math.round(Math.max(area.x, Math.min(bounds.x, area.x + area.width - width))), y: Math.round(Math.max(area.y, Math.min(bounds.y, area.y + area.height - height))) };
+  return fitWindowBounds(bounds, area);
 }
 function desktopState() {
   return { desktopMode: mode, visible: Boolean(win?.isVisible()), alwaysOnTop: settings.alwaysOnTop, mouseMode: settings.mouseMode, feeding, moving, bounds: win?.getBounds() || settings.bounds, shortcuts: shortcutState };
@@ -48,7 +63,7 @@ function persistWindow() {
 }
 function applyMouseMode() {
   if (!win || win.isDestroyed()) return;
-  const ignore = mode && !feeding && !moving && (settings.mouseMode === 'passthrough' || partialIgnore);
+  const ignore = mode && !feeding && !moving && !islandDragging && (settings.mouseMode === 'passthrough' || partialIgnore);
   win.setIgnoreMouseEvents(Boolean(ignore), { forward: true });
   return Boolean(ignore);
 }
@@ -72,12 +87,13 @@ function setDesktopMode(_enabled) {
   return true;
 }
 function setVisible(enabled) {
-  if (enabled) win.showInactive(); else { win.hide(); commandHidden(); }
+  if (enabled) win.showInactive(); else { finishMove(); win.hide(); commandHidden(); }
   sendState(); return desktopState();
 }
 function commandHidden() { win.webContents.send('world:command', { type: 'visibility', visible: false }); }
 function setMouseMode(value) {
   if (!['interactive', 'passthrough'].includes(value)) return desktopState();
+  finishMove();
   settings.mouseMode = value; partialIgnore = false; feeding = false; moving = false;
   applyTopmost(); applyMouseMode(); persistWindow(); sendState(); return desktopState();
 }
@@ -93,11 +109,26 @@ function resizeGarden(factor) {
 function moveGarden(delta) {
   const dx = Number(delta?.dx), dy = Number(delta?.dy);
   if (!Number.isFinite(dx) || !Number.isFinite(dy) || Math.abs(dx) > 1000 || Math.abs(dy) > 1000) return desktopState();
-  const b = win.getBounds(); win.setBounds(clampBounds({ ...b, x: b.x + dx, y: b.y + dy }));
+  const b = win.getBounds(), requested = { ...b, x: b.x + dx, y: b.y + dy };
+  if (delta.dragging === true) {
+    islandDragging = true; applyMouseMode();
+    win.setBounds(dragWindowBounds(requested, screen.getAllDisplays().map(display => display.workArea)));
+  } else win.setBounds(clampBounds(requested));
+  traceDrag('native:move', { dx, dy, dragging: delta.dragging === true, before: b, after: win.getBounds() });
   persistWindow(); sendState(); return desktopState();
+}
+function finishMove() {
+  if (!islandDragging || !win || win.isDestroyed()) return desktopState();
+  islandDragging = false;
+  const area = screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
+  win.setMinimumSize(Math.min(560, area.width), Math.min(360, area.height));
+  win.setBounds(fitWindowBounds(win.getBounds(), area));
+  traceDrag('native:finish', { after: win.getBounds() });
+  applyMouseMode(); persistWindow(); sendState(); return desktopState();
 }
 function setMoving(enabled) { moving = Boolean(enabled); feeding = false; partialIgnore = false; applyTopmost(); if (moving) win.showInactive(); applyMouseMode(); sendState(); command('move', { active: moving }); }
 function recover() {
+  finishMove();
   settings.mouseMode = 'interactive'; feeding = false; moving = false; partialIgnore = false;
   if (!win.isVisible()) win.showInactive();
   win.setBounds(clampBounds(win.getBounds())); applyTopmost(); applyMouseMode(); persistWindow(); sendState(); command('tools');
@@ -164,6 +195,8 @@ function installIPC() {
   handle('world:reset-bounds', resetBounds);
   handle('world:resize', resizeGarden);
   handle('world:move', moveGarden);
+  handle('world:finish-move', finishMove);
+  handle('world:drag-debug', rendererDragTrace);
   handle('world:context-menu', () => { Menu.buildFromTemplate(menuTemplate()).popup({ window: win }); return true; });
   handle('world:prepare-files', paths => recycler.prepare(paths));
   handle('world:confirm-trash', batchId => recycler.confirm(batchId));
@@ -176,14 +209,16 @@ function installIPC() {
 }
 async function createWindow() {
   const bounds = clampBounds(settings.bounds || defaultBounds());
+  const workArea = screen.getDisplayMatching(bounds).workArea;
   win = new BrowserWindow({
-    ...bounds, minWidth: 560, minHeight: 360, title: '息屿', frame: false, transparent: true,
+    ...bounds, minWidth: Math.min(560, workArea.width), minHeight: Math.min(360, workArea.height), title: '息屿', frame: false, transparent: true,
     backgroundColor: '#00000000', show: false, hasShadow: false, resizable: true,
-    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, backgroundThrottling: true },
+    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, backgroundThrottling: true, additionalArguments: dragDebugEnabled ? ['--xiyu-drag-debug'] : [] },
   });
   win.setAlwaysOnTop(settings.alwaysOnTop, 'floating');
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  win.webContents.on('render-process-gone', finishMove);
   win.webContents.on('will-navigate', (event, target) => { if (!target.startsWith(baseURL + '/')) event.preventDefault(); });
   win.webContents.on('before-input-event', (_event, input) => {
     if (input.type === 'keyDown' && input.key === 'Escape') {
@@ -192,6 +227,7 @@ async function createWindow() {
     }
   });
   win.on('move', persistWindow); win.on('resize', persistWindow);
+  win.on('blur', () => { traceDrag('native:blur'); finishMove(); });
   win.on('show', () => { command('visibility', { visible: true }); sendState(); });
   win.on('hide', () => { commandHidden(); sendState(); });
   win.once('ready-to-show', () => { win.showInactive(); applyMouseMode(); });
@@ -203,11 +239,22 @@ async function createWindow() {
 if (single) app.whenReady().then(async () => {
   try {
     const userData = app.getPath('userData');
+    dragDebugEnabled ||= fs.existsSync(path.join(userData, 'drag-debug.enabled'));
+    dragDebugPath = path.join(userData, 'drag-debug.json');
+    traceDrag('native:start');
     windowStore = new AtomicStore(path.join(userData, 'window-state.json'), { delay: 0, maxBytes: 10000 });
     gardenStore = new AtomicStore(path.join(userData, 'garden-state.json'));
     demoStore = new AtomicStore(path.join(userData, 'demo-state.json'));
     const loaded = await windowStore.load();
-    if (loaded.ok && loaded.state) settings = { ...settings, ...loaded.state, alwaysOnTop: loaded.state.alwaysOnTop !== false, mouseMode: loaded.state.mouseMode === 'passthrough' ? 'passthrough' : 'interactive' };
+    if (loaded.ok && loaded.state) {
+      const display = validWindowBounds(loaded.state.bounds) ? screen.getDisplayMatching(loaded.state.bounds) : screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+      const migration = migrateWindowLayout(loaded.state, display.workArea);
+      settings = { ...settings, ...migration.settings, alwaysOnTop: loaded.state.alwaysOnTop !== false, mouseMode: loaded.state.mouseMode === 'passthrough' ? 'passthrough' : 'interactive' };
+      if (migration.changed) {
+        const saved = await windowStore.save(settings);
+        if (!saved.ok) console.error(saved.error);
+      }
+    }
     recycler = new FileRecycle({ trashItem: filename => shell.trashItem(filename), protectedPaths: [app.getAppPath(), userData, path.dirname(process.execPath)] });
     world = createWorldServer({ port: 4178 });
     let info;
@@ -227,7 +274,7 @@ if (single) app.whenReady().then(async () => {
     shortcutState.recover = globalShortcut.register('CommandOrControl+Alt+Shift+G', recover);
     shortcutState.feed = globalShortcut.register('CommandOrControl+Alt+Shift+F', () => setFeedingMode(!feeding));
     await createWindow(); createTray();
-    const repairDisplay = () => { clearTimeout(displayTimer); displayTimer = setTimeout(() => { if (win && !win.isDestroyed()) { win.setBounds(clampBounds(win.getBounds())); persistWindow(); sendState(); } }, 300); };
+    const repairDisplay = () => { clearTimeout(displayTimer); displayTimer = setTimeout(() => { if (win && !win.isDestroyed()) { const bounds = clampBounds(win.getBounds()); const area = screen.getDisplayMatching(bounds).workArea; win.setMinimumSize(Math.min(560, area.width), Math.min(360, area.height)); win.setBounds(bounds); persistWindow(); sendState(); } }, 300); };
     screen.on('display-removed', repairDisplay); screen.on('display-added', repairDisplay); screen.on('display-metrics-changed', repairDisplay);
     powerMonitor.on('suspend', () => { command('suspend'); gardenStore.flush(); demoStore.flush(); });
     powerMonitor.on('lock-screen', () => command('suspend'));

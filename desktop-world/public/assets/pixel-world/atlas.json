@@ -50,6 +50,12 @@
       "width": 1145,
       "height": 1374,
       "alpha": true
+    },
+    "islandLong": {
+      "file": "island-pond-long-v1.png",
+      "width": 2098,
+      "height": 749,
+      "alpha": true
     }
   },
   "sprites": {
@@ -497,20 +503,18 @@
       "kind": "island"
     },
     "island-sakura-pond": {
-      "name": "樱花池塘岛",
+      "name": "长条樱花池塘岛",
+      "image": "islandLong",
       "rect": [
-        25,
-        637,
-        592,
-        544
+        17,
+        101,
+        2065,
+        586
       ],
       "anchor": [
-        296.0,
-        541
+        1032.5,
+        583
       ],
-      "row": 1,
-      "column": 0,
-      "image": "islands",
       "kind": "island"
     },
     "island-harvest-garden": {
@@ -3452,6 +3456,7 @@
     "植物每种5个静态生长状态，对应stage 0..4；不是连续动作动画。",
     "同一种植物的各阶段必须共享scale，不能逐帧自动fit。",
     "锚点以底部可见主体估计，落点需在具体地图中美术调校。",
-    "水面和石头不属于苔藓/睡莲的生长过程。"
+    "水面和石头不属于苔藓/睡莲的生长过程。",
+    "樱花池塘岛已替换为横向长条版本；原图保留，见island-pond-long-v1.json。"
   ]
 }

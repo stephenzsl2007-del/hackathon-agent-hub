@@ -8,17 +8,18 @@
     "growth-trees": "growth-trees-v2.png",
     "growth-shrubs": "growth-shrubs-v2.png",
     "growth-flowers": "growth-flowers.png",
-    "growth-garden": "growth-garden.png"
+    "growth-garden": "growth-garden.png",
+    "island-long": "island-pond-long-v1.png"
   },
   "sprites": [
     {
       "id": "island.pond",
-      "source": "islands",
+      "source": "island-long",
       "rect": [
-        14,
-        629,
-        609,
-        562
+        17,
+        101,
+        2065,
+        586
       ],
       "anchor": [
         0,
@@ -2901,5 +2902,10 @@
       ],
       "worldScale": 0.123894
     }
-  ]
+  ],
+  "scene": {
+    "id": "island-pond-long-v1",
+    "profile": "../../scene-profile.js",
+    "version": 2
+  }
 }

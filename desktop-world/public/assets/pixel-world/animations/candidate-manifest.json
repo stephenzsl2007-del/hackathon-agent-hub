@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "description": "QA ONLY. Walk-v5 passed independent static and browser loop review; production manifest is managed separately.",
+  "sheets": {
+    "cat": "cat-expressions-v1.png",
+    "walkCandidate": "cat-walk-right-v5.png"
+  },
+  "animals": {
+    "cat": {
+      "name": "团团",
+      "sheet": "cat",
+      "defaultFacing": "right",
+      "worldScale": 0.07,
+      "states": {
+        "idle": {
+          "loop": true,
+          "frames": [
+            {
+              "rect": [
+                167,
+                74,
+                491,
+                410
+              ],
+              "anchorPx": [
+                180,
+                407
+              ],
+              "durationMs": 1800
+            },
+            {
+              "rect": [
+                890,
+                75,
+                491,
+                408
+              ],
+              "anchorPx": [
+                180,
+                406
+              ],
+              "durationMs": 140
+            }
+          ]
+        },
+        "eat": {
+          "loop": true,
+          "frames": [
+            {
+              "rect": [
+                156,
+                541,
+                562,
+                402
+              ],
+              "anchorPx": [
+                189,
+                398
+              ],
+              "durationMs": 220
+            },
+            {
+              "rect": [
+                881,
+                541,
+                562,
+                401
+              ],
+              "anchorPx": [
+                189,
+                398
+              ],
+              "durationMs": 180
+            }
+          ]
+        },
+        "walk": {
+          "sheet": "walkCandidate",
+          "loop": true,
+          "frames": [
+            {
+              "rect": [
+                28,
+                139,
+                513,
+                427
+              ],
+              "anchorPx": [
+                207,
+                424
+              ],
+              "durationMs": 150
+            },
+            {
+              "rect": [
+                623,
+                139,
+                449,
+                427
+              ],
+              "anchorPx": [
+                161,
+                424
+              ],
+              "durationMs": 150
+            },
+            {
+              "rect": [
+                1106,
+                139,
+                519,
+                427
+              ],
+              "anchorPx": [
+                218,
+                424
+              ],
+              "durationMs": 150
+            },
+            {
+              "rect": [
+                1691,
+                139,
+                462,
+                427
+              ],
+              "anchorPx": [
+                171,
+                424
+              ],
+              "durationMs": 150
+            }
+          ]
+        }
+      }
+    }
+  },
+  "validation": {
+    "status": "candidate_walk_v5_passed_stylized",
+    "acceptedStates": [
+      "idle",
+      "eat",
+      "walk"
+    ],
+    "missingStates": [
+      "rest"
+    ],
+    "inspection": "../../../../art/cat-expressions-frames.json",
+    "notes": [
+      "Idle/eat are approved.",
+      "Walk-v5 passed independent static limb/character and browser loop review as a four-frame stylized walk.",
+      "Do not auto-load v1/v2/v3/v4 walk candidates.",
+      "One worldScale 0.07 for all states."
+    ],
+    "walkInspection": "../../../../art/cat-walk-v5-frames.json"
+  },
+  "provenance": {
+    "tool": "built-in image_gen",
+    "prompt": "../../../../art/cat-expressions-prompt.txt"
+  }
+}

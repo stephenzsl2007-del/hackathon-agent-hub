@@ -4,7 +4,7 @@
   const status = document.querySelector('#status');
   const response = document.querySelector('#response');
   const buttons = [...document.querySelectorAll('[data-action]')];
-  const replies = { wind: '风已经出发了。看看花草有没有轻轻摇动。', rain: '一片小雨云来了，花苞正在喝水。', seed: '你留下一粒种子，它会成为小岛的一部分。', food: '小动物闻到香味了，等它慢慢跑过来。', tide: '潮水正在回应你的轻触。', fireflies: '你送来的微光，正在夜色里漂浮。' };
+  const replies = { wind: '风已经出发了。看看花草有没有轻轻摇动。', rain: '一片小雨云来了，花苞正在喝水。', seed: '你留下一粒种子，它会成为小岛的一部分。', food: '小动物闻到香味了，等它慢慢跑过来。', tide: '池塘泛起了一圈圈水波。', fireflies: '你送来的微光，正在夜色里漂浮。' };
   let connected = false;
   let holdTimer;
   let activeButton;
@@ -60,7 +60,7 @@
   window.addEventListener('blur', stopHold);
   if (!room) {
     status.innerHTML = '<i></i>还没有加入小岛';
-    show('请在电脑中点击「一起造风」，扫描二维码加入。');
+    show('请在电脑中打开「布告栏 → 邀请朋友」，扫描二维码加入。');
     return;
   }
   const events = new EventSource(`/api/events?phone=1&room=${encodeURIComponent(room)}`);
