@@ -7,7 +7,7 @@ function copyApp(root, dest) {
   fs.mkdirSync(dest, { recursive: true });
   fs.cpSync(path.join(root, 'public'), path.join(dest, 'public'), { recursive: true });
   fs.mkdirSync(path.join(dest, 'desktop'), { recursive: true });
-  for (const name of ['main.cjs', 'preload.cjs', 'native-services.cjs']) fs.copyFileSync(path.join(root, 'desktop', name), path.join(dest, 'desktop', name));
+  for (const name of ['main.cjs', 'preload.cjs', 'native-services.cjs', 'keyboard-activity.cjs', 'keyboard-activity.cs', 'build-keyboard.ps1', 'parallel-folder.cjs']) fs.copyFileSync(path.join(root, 'desktop', name), path.join(dest, 'desktop', name));
   fs.copyFileSync(path.join(root, 'server.cjs'), path.join(dest, 'server.cjs'));
   const manifest = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   const { scripts, devDependencies, ...runtimeManifest } = manifest;

@@ -31,6 +31,7 @@ const hints = {
 let world, mic, companion, focusSession, desktopUI, gardenAudio, currentTool='explore', night=false, saveTimer, noticeTimer, demoTimers=[], demoRunning=false, demoBackup=null, eventStream, inviteUrl='', desktopMode=false, spaceWindTimer, micState='stopped', ignoringMouse=false, dragDepth=0, stateReady=false, saveRevision=0, saveInFlight=null, toolsTimer, desktopState={}, moveDrag=null;
 const storageKey='xiyu-state-v2';
 const resources={food:0,water:0};const rewardedSessions=new Set();
+let keyboardLast=0,keyboardFlow=0;
 const isWindows=(window.desktopWorld?.platform || navigator.platform || '').toLowerCase().startsWith('win');
 const recoverShortcut=isWindows?'Ctrl+Alt+Shift+G':'⌘⌥⇧G';
 const dragKey=isWindows?'Alt':'Option（⌥）';
@@ -110,8 +111,14 @@ function command(action,data={}){
   if(action==='dismiss'){document.body.classList.remove('tools-open');desktopUI?.closePanels();return;}
   if(action==='visibility'){if(!data.visible){mic?.stop();saveNow();}return;}
   if(action==='suspend'){mic?.stop();saveNow();return;}
-  if(action==='notice'){announce(data.message);return;}
+  if(action==='notice'){announce(data.message,data.duration);return;}
+  if(action==='parallel-state'){world.setParallel(data.state);return;}
   if(action==='resume'){return;}
+  if(action==='keyboard-activity'){
+    if(!stateReady||demoRunning||!desktopState.keyboardRain?.enabled||desktopState.keyboardRain.suspended)return;
+    const now=performance.now();keyboardFlow=now-keyboardLast<650?Math.min(1,keyboardFlow+.12):.2;keyboardLast=now;
+    focusSession?.recordActivity();world.impulse('keyboard-rain',{duration:.9,intensity:keyboardFlow});return;
+  }
   if(action==='prepare-quit'){
     (async()=>{clearTimeout(saveTimer);saveTimer=null;stopSpaceWind();mic?.stop();if(saveInFlight)await saveInFlight;const result=await saveNow();await window.desktopWorld?.ackQuit?.(data.requestId,result?.ok===true);})();return;
   }
@@ -119,7 +126,7 @@ function command(action,data={}){
   if(action==='keyboard-rain'){world.impulse(action,data);return;}
   if(action==='compost'){world.impulse('compost',data);return;}
   if(demoRunning)stopDemo();
-  const result=world.impulse(action,data);scheduleSave();return result;
+  const result=world.impulse(action,data);if(result?.error)announce(result.error);scheduleSave();return result;
 }
 function toggleTools(force){
   const visible=typeof force==='boolean'?force:!document.body.classList.contains('tools-open');document.body.classList.toggle('tools-open',visible);clearTimeout(toolsTimer);
@@ -212,7 +219,7 @@ function setDesktopMode(value){
 }
 async function init(){
   try{
-    const [{World},{MicrophoneWind,GardenAudio},{Companion},{FocusSession},{DesktopUI}]=await Promise.all([import('./world.js'),import('./audio.js'),import('./companion.js'),import('./focus.js'),import('./desktop-ui.js')]);
+    const [{HabitatWorld:World},{MicrophoneWind,GardenAudio},{Companion},{FocusSession},{DesktopUI}]=await Promise.all([import('./habitat-world.js'),import('./audio.js'),import('./companion.js'),import('./focus.js'),import('./desktop-ui.js')]);
     gardenAudio=new GardenAudio();
     world=new World($('#world'),{onEvent:onWorldEvent,onChange:updateStats,onCommand:command});
     if(window.desktopWorld){desktopMode=true;document.body.classList.add('desktop-mode');world.setDesktopMode(true);}
@@ -236,7 +243,7 @@ async function init(){
     focusSession=new FocusSession({onChange:state=>desktopUI?.updateFocus(state),onRain:event=>command('keyboard-rain',event),onReward:event=>{
       if(rewardedSessions.has(event.sessionId))return;rewardedSessions.add(event.sessionId);resources.water+=3;desktopUI?.updateResources();saveNow();announce('专注完成，小水壶收集了 3 滴水。',5000);
     }});
-    desktopUI=new DesktopUI({command,companion,focus:focusSession,resources,isDemo:()=>demoRunning,platform:{recoverShortcut,trayLabel,trashLabel},changed:scheduleSave,announce,showDialog,toggleTools,onState:state=>{desktopState=state;if(desktopMode!==(state.desktopMode!==false))setDesktopMode(state.desktopMode!==false);}});
+    desktopUI=new DesktopUI({command,companion,focus:focusSession,resources,isDemo:()=>demoRunning,platform:{recoverShortcut,trayLabel,trashLabel},changed:scheduleSave,announce,showDialog,toggleTools,onState:state=>{desktopState=state;if(!state.keyboardRain?.enabled||state.keyboardRain.suspended){world.visualRainUntil=0;keyboardFlow=0;}if(desktopMode!==(state.desktopMode!==false))setDesktopMode(state.desktopMode!==false);}});
     try{
       let saved=null;
       if(window.desktopWorld?.loadState){const result=await window.desktopWorld.loadState();if(result.error)announce(`存档提示：${result.error}`,6500);saved=result.state;saveRevision=result.revision||0;}
@@ -247,6 +254,7 @@ async function init(){
         for(const id of saved.rewardedSessions||[])rewardedSessions.add(id);if(saved.focus)focusSession.restore(saved.focus);
       }else if(!window.desktopWorld){const older=JSON.parse(localStorage.getItem('xiyu-world-v1')||'null');if(older)world.restore(older);}
       stateReady=true;
+      if(window.desktopWorld?.getParallel)world.setParallel(await window.desktopWorld.getParallel());
       const stats=world.getStats();updateNight(Boolean(stats.night),false);updateStats(stats);desktopUI.updateResources();desktopUI.updateFocus(focusSession.getState());
     }catch(error){announce('存档读取遇到问题，本次先展示花园；原存档不会覆盖。',6500);console.warn('Load failed',error.message);}
     mic=new MicrophoneWind({
@@ -315,13 +323,13 @@ document.addEventListener('pointermove',event=>{
 document.addEventListener('contextmenu',event=>{if(window.desktopWorld){event.preventDefault();window.desktopWorld.showContextMenu();}});
 document.addEventListener('pointerdown',event=>{
   if(!window.desktopWorld||event.button!==0||!(event.altKey||desktopUI?.moveMode)||event.target.closest('button,input,dialog'))return;
-  event.preventDefault();event.stopImmediatePropagation();moveDrag={x:event.screenX,y:event.screenY};setMousePassthrough(false);$('#world').setPointerCapture?.(event.pointerId);
+  event.preventDefault();event.stopImmediatePropagation();moveDrag={pointerId:event.pointerId};setMousePassthrough(false);$('#world').setPointerCapture?.(event.pointerId);window.desktopWorld.beginDrag();
 },true);
 document.addEventListener('pointermove',event=>{
-  if(!moveDrag)return;event.preventDefault();event.stopImmediatePropagation();const dx=event.screenX-moveDrag.x,dy=event.screenY-moveDrag.y;
-  if(dx||dy){moveDrag={x:event.screenX,y:event.screenY};window.desktopWorld.moveGarden({dx,dy});}
+  if(!moveDrag)return;event.preventDefault();event.stopImmediatePropagation();
 },true);
-document.addEventListener('pointerup',()=>{moveDrag=null;},true);
+function endMove(){if(moveDrag){moveDrag=null;window.desktopWorld?.endDrag?.();}}
+document.addEventListener('pointerup',endMove,true);document.addEventListener('pointercancel',endMove,true);window.addEventListener('blur',endMove);
 document.addEventListener('dragenter',event=>{
   if(![...event.dataTransfer.types].includes('Files'))return;
   event.preventDefault();dragDepth++;$('#file-drop-overlay').hidden=false;dismissNote();setMousePassthrough(false);
@@ -336,7 +344,7 @@ document.addEventListener('drop',event=>{
 });
 document.addEventListener('pointerdown',event=>{if(document.body.classList.contains('tools-open')&&event.target.closest('.bottom-ui,.companion-card'))toggleTools(true);});
 document.addEventListener('keydown',event=>{
-  if(!event.metaKey&&!event.ctrlKey&&!event.altKey&&event.key.length===1)focusSession?.recordActivity();
+  if(!desktopState.keyboardRain?.enabled&&!event.metaKey&&!event.ctrlKey&&!event.altKey&&event.key.length===1)focusSession?.recordActivity();
   if(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLSelectElement || event.metaKey || event.ctrlKey || event.altKey)return;
   if(event.key==='Escape'){stopDemo();quietMode(false);toggleTools(false);return;}
   if($$('dialog').some(dialog=>dialog.open))return;

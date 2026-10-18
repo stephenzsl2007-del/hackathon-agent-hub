@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { copyApp } = require('./package-assets.cjs');
+const { buildKeyboardHelper } = require('./keyboard-activity.cjs');
 if (process.platform !== 'win32') throw new Error('请在 Windows 上生成 Windows 程序包。');
 const root = path.resolve(__dirname, '..');
 const version = require('../package.json').version;
@@ -18,15 +19,20 @@ function removeGenerated(folder) {
   if (path.dirname(resolved) !== output || !(path.basename(resolved).startsWith('.xiyu-stage-') || resolved === target)) throw new Error('Refusing to remove path outside build output.');
   fs.rmSync(resolved, { recursive: true, force: true });
 }
-try {
+(async () => { try {
   fs.cpSync(runtime, stage, { recursive: true, dereference: true });
   fs.renameSync(path.join(stage, 'electron.exe'), path.join(stage, 'Xiyu.exe'));
   fs.rmSync(path.join(stage, 'resources', 'default_app.asar'), { force: true });
   copyApp(root, path.join(stage, 'resources', 'app'));
+  await buildKeyboardHelper(path.join(stage, 'resources', 'app', 'desktop', 'keyboard-activity.exe'));
   fs.writeFileSync(path.join(stage, '使用说明.txt'), [
     '息屿 · Windows 桌面花园', '',
     '请先完整解压程序包，再双击 Xiyu.exe。无需另装 Node.js；请保留同目录的全部文件。',
     '右键小岛打开工具；Alt + 拖动移动花园。',
+    '右键可开启后台键盘雨、邀请动物邻居、创建或关联平行桌面文件夹。',
+    '点树落花落果，点动物后移动光标可短暂带它散步；连点草地三次召集邻居。',
+    '关联文件夹里：太阳.txt 控制昼夜，风.txt 和雨.txt 控制天气，图片成为相片访客。',
+    '后台键盘雨只感知敲键活动，不记录按键内容；隐藏、锁屏和休眠时暂停。',
     'Ctrl+Alt+Shift+G 找回花园；Ctrl+Alt+Shift+F 进入文件投喂模式。',
     '任务栏通知区域的小叶子可显示花园、恢复鼠标交互或完全退出。',
     '文件回收需要逐批确认，成功后移入 Windows 回收站。',
@@ -44,3 +50,4 @@ try {
   console.log('Windows 程序包：' + target);
   if (!process.argv.includes('--no-zip')) console.log('分发压缩包：' + target + '.zip');
 } finally { if (fs.existsSync(stage)) removeGenerated(stage); }
+})().catch(error => { console.error(error.message); process.exitCode = 1; });

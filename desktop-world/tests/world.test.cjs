@@ -54,3 +54,13 @@ test('focus drops are retained when no plant can grow or a demo is active', asyn
   ui.isDemo = () => true;world.flowers[0].growthProgress = .1;
   assert.equal(ui.waterGarden(), false);assert.equal(ui.resources.water, 1);
 });
+
+test('keyboard rain is transient feedback and grants no growth or resources', async () => {
+  const { world } = await fixture();const before = world.flowers[0].growthProgress;
+  world.impulse('keyboard-rain', { duration: .9, intensity: 1 });world._update(.1);
+  assert.ok(world.particles.some(p => p.kind === 'rain'));
+  assert.equal(world.rainUntil || 0, 0);assert.equal(world.flowers[0].water, 0);
+  assert.ok(Math.abs(world.flowers[0].growthProgress - before - .000025 * .1) < 1e-9);
+  assert.equal('visualRainUntil' in world.serialize(), false);
+  world.time += 3;world._update(2);assert.equal(world.particles.filter(p => p.kind === 'rain').length, 0);
+});

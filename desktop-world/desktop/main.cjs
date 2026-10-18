@@ -5,11 +5,15 @@ const path = require('node:path');
 const os = require('node:os');
 const { createWorldServer } = require('../server.cjs');
 const { AtomicStore, FileRecycle, QuitHandshake } = require('./native-services.cjs');
+const { KeyboardActivity } = require('./keyboard-activity.cjs');
+const { ParallelFolder, createPlayFolder } = require('./parallel-folder.cjs');
 let win, world, tray, baseURL, windowStore, gardenStore, demoStore, recycler;
 let mode = true, feeding = false, moving = false, partialIgnore = false, shuttingDown = false;
 let windowSaveTimer, displayTimer, quitting;
+let keyboardActivity, nativeDrag, parallelFolder, dragSize;
+const keyboardBlocks = new Set();
 const quitHandshake = new QuitHandshake({ timeout: 3000 });
-let settings = { alwaysOnTop: true, mouseMode: 'interactive', bounds: null };
+let settings = { alwaysOnTop: true, mouseMode: 'interactive', bounds: null, keyboardRainEnabled: false };
 const shortcutState = {};
 app.setName('息屿');
 // A separate profile keeps development and automated acceptance out of daily saves.
@@ -36,12 +40,16 @@ function clampBounds(bounds) {
   return { width, height, x: Math.round(Math.max(area.x, Math.min(bounds.x, area.x + area.width - width))), y: Math.round(Math.max(area.y, Math.min(bounds.y, area.y + area.height - height))) };
 }
 function desktopState() {
-  return { platform: process.platform, desktopMode: mode, visible: Boolean(win?.isVisible()), alwaysOnTop: settings.alwaysOnTop, mouseMode: settings.mouseMode, feeding, moving, bounds: win?.getBounds() || settings.bounds, shortcuts: shortcutState };
+  return { platform: process.platform, desktopMode: mode, visible: Boolean(win?.isVisible()), alwaysOnTop: settings.alwaysOnTop, mouseMode: settings.mouseMode, feeding, moving, bounds: win?.getBounds() || settings.bounds, shortcuts: shortcutState, keyboardRain: keyboardActivity?.state() };
 }
 function sendState() { if (win && !win.isDestroyed()) win.webContents.send('world:desktop-state', desktopState()); updateTray(); }
 function command(type, details = {}) {
   if (!win || win.isDestroyed()) return;
   win.webContents.send('world:command', { type, ...details });
+}
+function blockKeyboard(reason, blocked) {
+  if (blocked) keyboardBlocks.add(reason); else keyboardBlocks.delete(reason);
+  if (keyboardBlocks.size) keyboardActivity?.suspend(); else keyboardActivity?.resume();
 }
 function persistWindow() {
   clearTimeout(windowSaveTimer);
@@ -77,7 +85,9 @@ function setDesktopMode(_enabled) {
   return true;
 }
 function setVisible(enabled) {
+  if (!enabled) endNativeDrag();
   if (enabled) win.showInactive(); else { win.hide(); commandHidden(); }
+  blockKeyboard('hidden', !enabled);
   sendState(); return desktopState();
 }
 function commandHidden() { win.webContents.send('world:command', { type: 'visibility', visible: false }); }
@@ -101,11 +111,47 @@ function moveGarden(delta) {
   const b = win.getBounds(); win.setBounds(clampBounds({ ...b, x: b.x + dx, y: b.y + dy }));
   persistWindow(); sendState(); return desktopState();
 }
+function endNativeDrag() {
+  if (!nativeDrag) return true;
+  clearInterval(nativeDrag.timer);nativeDrag = null;persistWindow();return true;
+}
+function beginNativeDrag() {
+  endNativeDrag();partialIgnore = false;applyMouseMode();
+  const origin = screen.getCursorScreenPoint(),bounds = win.getBounds(),started = Date.now();
+  // Fractional Windows DPI can round getBounds outward. Keep one size across
+  // moves instead of feeding each rounded native rectangle into the next move.
+  if (!dragSize || Math.abs(dragSize.width-bounds.width)>3 || Math.abs(dragSize.height-bounds.height)>3) dragSize={width:bounds.width,height:bounds.height};
+  Object.assign(bounds,dragSize);
+  nativeDrag = { x:bounds.x,y:bounds.y,timer: setInterval(() => {
+    if (!win || win.isDestroyed() || Date.now()-started>30000) { endNativeDrag();return; }
+    const cursor = screen.getCursorScreenPoint();
+    const next = clampBounds({ ...bounds, x: bounds.x+cursor.x-origin.x, y: bounds.y+cursor.y-origin.y });
+    if(next.x===nativeDrag.x&&next.y===nativeDrag.y)return;
+    nativeDrag.x=next.x;nativeDrag.y=next.y;win.setBounds(next,false);
+  },16) };
+  return true;
+}
 function setMoving(enabled) { moving = Boolean(enabled); feeding = false; partialIgnore = false; applyTopmost(); if (moving) win.showInactive(); applyMouseMode(); sendState(); command('move', { active: moving }); }
 function recover() {
   settings.mouseMode = 'interactive'; feeding = false; moving = false; partialIgnore = false;
   win.show(); win.focus();
   win.setBounds(clampBounds(win.getBounds())); applyTopmost(); applyMouseMode(); persistWindow(); sendState(); command('tools');
+}
+async function connectParallel(create = false) {
+  try {
+    let folder;
+    if (create) folder = await createPlayFolder(app.getPath('desktop'));
+    else {
+      const result = await dialog.showOpenDialog(win, { title: '选择与圆岛互动的文件夹', properties: ['openDirectory'] });
+      if (result.canceled || !result.filePaths[0]) return { ok: false, canceled: true };
+      folder = result.filePaths[0];
+    }
+    const state = await parallelFolder.connect(folder);
+    if (!state.active) return { ok: false, error: state.error };
+    command('notice', { message: '平行桌面已关联：太阳.txt 控制昼夜，风.txt 和雨.txt 控制天气，图片会化成访客。', duration: 9000 });
+    if (create) await shell.openPath(folder);
+    return { ok: true, state };
+  } catch { const error = '暂时无法关联文件夹，请选择本机可访问的普通文件夹。';command('notice', { message: error });return { ok: false, error }; }
 }
 function menuTemplate() {
   return [
@@ -124,6 +170,16 @@ function menuTemplate() {
     { label: '开启／关闭麦克风送风', click: () => { setVisible(true); command('mic'); } },
     { label: '演示植物五阶段成长', click: () => { setVisible(true); command('demo'); } },
     { label: '专注陪伴', click: () => { recover(); command('focus'); } },
+    ...(process.platform === 'win32' ? [{ label: '后台键盘雨（只感知敲键，不读取文字）', type: 'checkbox', checked: Boolean(keyboardActivity?.enabled), enabled: !keyboardActivity?.starting, click: item => keyboardActivity?.setEnabled(item.checked) }] : []),
+    { label: '邀请动物邻居', submenu: Object.entries({rabbit:'兔子',bird:'小鸟',squirrel:'松鼠',duck:'鸭子'}).map(([animalType,label]) => ({ label, click: () => command('invite-animal', { animalType }) })) },
+    { label: '请太阳回来', click: () => command('sun-return') },
+    { label: '看一场风雨', click: () => command('weather-preview') },
+    { label: '平行桌面', submenu: [
+      { label: '在桌面创建互动文件夹', click: () => connectParallel(true) },
+      { label: '关联现有文件夹…', click: () => connectParallel(false) },
+      { label: '打开关联文件夹', enabled: !!parallelFolder?.state().active, click: () => shell.openPath(parallelFolder.folder) },
+      { label: '断开关联', enabled: !!parallelFolder?.state().active, click: () => parallelFolder.disconnect() },
+    ] },
     { label: '邀请手机加入', click: () => { recover(); command('share'); } },
     { label: '操作说明', click: () => { recover(); command('guide'); } },
     { label: '设置与存档', click: () => { recover(); command('settings'); } },
@@ -175,6 +231,12 @@ function installIPC() {
   handle('world:set-feeding-mode', setFeedingMode);
   handle('world:set-visible', setVisible);
   handle('world:set-always-on-top', setAlwaysOnTop);
+  handle('world:set-keyboard-rain', enabled => keyboardActivity.setEnabled(enabled === true));
+  handle('world:get-parallel', () => parallelFolder.state());
+  handle('world:connect-parallel', create => connectParallel(create === true));
+  handle('world:disconnect-parallel', () => parallelFolder.disconnect());
+  handle('world:begin-drag', beginNativeDrag);
+  handle('world:end-drag', endNativeDrag);
   handle('world:reset-bounds', resetBounds);
   handle('world:resize', resizeGarden);
   handle('world:move', moveGarden);
@@ -201,14 +263,17 @@ async function createWindow() {
   win.webContents.on('will-navigate', (event, target) => { if (!target.startsWith(baseURL + '/')) event.preventDefault(); });
   win.webContents.on('before-input-event', (_event, input) => {
     if (input.type === 'keyDown' && input.key === 'Escape') {
+      endNativeDrag();
       feeding = false; moving = false; partialIgnore = false; applyTopmost(); applyMouseMode(); sendState();
       command('dismiss');
     }
   });
   win.on('move', persistWindow); win.on('resize', persistWindow);
+  win.on('blur', endNativeDrag);
   win.on('close', event => { if (!shuttingDown) { event.preventDefault(); app.quit(); } });
-  win.on('show', () => { command('visibility', { visible: true }); sendState(); });
-  win.on('hide', () => { commandHidden(); sendState(); });
+  win.on('show', () => { blockKeyboard('hidden', false); command('visibility', { visible: true }); sendState(); });
+  win.on('hide', () => { blockKeyboard('hidden', true); commandHidden(); sendState(); });
+  win.webContents.on('render-process-gone', () => keyboardActivity?.setEnabled(false));
   win.once('ready-to-show', () => { win.showInactive(); applyMouseMode(); });
   await win.loadURL(`${baseURL}/?native=1`);
   win.webContents.send('world:mode', mode); sendState();
@@ -221,8 +286,11 @@ if (single) app.whenReady().then(async () => {
     windowStore = new AtomicStore(path.join(userData, 'window-state.json'), { delay: 0, maxBytes: 10000 });
     gardenStore = new AtomicStore(path.join(userData, 'garden-state.json'));
     demoStore = new AtomicStore(path.join(userData, 'demo-state.json'));
+    keyboardActivity = new KeyboardActivity({ profile: userData, onActivity: () => command('keyboard-activity'), onState: state => { settings.keyboardRainEnabled=state.enabled;persistWindow();sendState();if(state.error)command('notice',{message:state.error}); } });
+    parallelFolder = new ParallelFolder({ thumbnail: async filename => (await nativeImage.createThumbnailFromPath(filename, { width: 64, height: 64 })).toDataURL(), onState: state => { command('parallel-state', { state });if(state.error)command('notice',{message:state.error});updateTray(); } });
     const loaded = await windowStore.load();
-    if (loaded.ok && loaded.state) settings = { ...settings, ...loaded.state, alwaysOnTop: loaded.state.alwaysOnTop !== false, mouseMode: loaded.state.mouseMode === 'passthrough' ? 'passthrough' : 'interactive' };
+    if (loaded.ok && loaded.state) settings = { ...settings, ...loaded.state, alwaysOnTop: loaded.state.alwaysOnTop !== false, mouseMode: loaded.state.mouseMode === 'passthrough' ? 'passthrough' : 'interactive', keyboardRainEnabled: loaded.state.keyboardRainEnabled === true };
+    const restoreKeyboardRain = settings.keyboardRainEnabled;
     recycler = new FileRecycle({ trashItem: filename => shell.trashItem(filename), protectedPaths: [app.getAppPath(), userData, path.dirname(process.execPath)] });
     world = createWorldServer({ port: 4178 });
     let info;
@@ -242,12 +310,13 @@ if (single) app.whenReady().then(async () => {
     shortcutState.recover = globalShortcut.register('CommandOrControl+Alt+Shift+G', recover);
     shortcutState.feed = globalShortcut.register('CommandOrControl+Alt+Shift+F', () => setFeedingMode(!feeding));
     await createWindow(); createTray();
+    if (restoreKeyboardRain) keyboardActivity.setEnabled(true);
     const repairDisplay = () => { clearTimeout(displayTimer); displayTimer = setTimeout(() => { if (win && !win.isDestroyed()) { win.setBounds(clampBounds(win.getBounds())); persistWindow(); sendState(); } }, 300); };
     screen.on('display-removed', repairDisplay); screen.on('display-added', repairDisplay); screen.on('display-metrics-changed', repairDisplay);
-    powerMonitor.on('suspend', () => { command('suspend'); gardenStore.flush(); demoStore.flush(); });
-    powerMonitor.on('lock-screen', () => command('suspend'));
-    powerMonitor.on('resume', () => command('resume'));
-    powerMonitor.on('unlock-screen', () => command('resume'));
+    powerMonitor.on('suspend', () => { blockKeyboard('sleep',true);command('suspend'); gardenStore.flush(); demoStore.flush(); });
+    powerMonitor.on('lock-screen', () => { blockKeyboard('lock',true);command('suspend'); });
+    powerMonitor.on('resume', () => { blockKeyboard('sleep',false);command('resume'); });
+    powerMonitor.on('unlock-screen', () => { blockKeyboard('lock',false);command('resume'); });
   } catch (error) { console.error(error); app.quit(); }
 });
 app.on('second-instance', () => { if (win) recover(); });
@@ -280,4 +349,4 @@ app.on('before-quit', event => {
     dialog.showErrorBox('暂时无法退出', error.message || '请重试保存后再退出。');
   }).finally(() => { quitting = null; });
 });
-app.on('will-quit', () => { globalShortcut.unregisterAll(); tray?.destroy(); if (world) world.close(); });
+app.on('will-quit', () => { endNativeDrag();parallelFolder?.disconnect(false);keyboardActivity?.dispose();globalShortcut.unregisterAll(); tray?.destroy(); if (world) world.close(); });

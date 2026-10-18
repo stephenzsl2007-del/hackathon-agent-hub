@@ -117,7 +117,7 @@ export class World {
   setTide(value) { this.tide=clamp(Number(value)||0); }
   clearTransientState() {
     this.wind=this.windTarget=this.windHold=0;this.windSources.clear();
-    this.rainCloud=this.dragCloud=null;this.rainUntil=this.visualRainUntil=0;
+    this.rainCloud=this.dragCloud=null;this.rainUntil=this.visualRainUntil=this.visualRainIntensity=0;
     this.ripples=[];this.particles=[];this.flyingSeeds=[];this.food=[];
     this.mouse.down=false;this.mouse.x=this.mouse.y=-100;this.tideStart=null;
     this.fireflies=this.fireflies.slice(0,33);
@@ -142,7 +142,7 @@ export class World {
     let x = norm(data.x,this.art.active?300+this._rand()*130:230+this._rand()*120,W), y=norm(data.y,this.art.active?220+this._rand()*75:270+this._rand()*50,H);
     if(action==='wind') { this.setWind(data.amount ?? data.value ?? .95,data.source||'guest');this.windHold=this.time+(data.duration||2.3);this._releaseSeeds(5);this._emit('wind','风来了，蒲公英飞向新的地方。'); }
     else if(action==='rain'||action==='water') { this.rainCloud={x:clamp(x,105,530),y:clamp(y-100,65,165),w:.85};this.rainUntil=this.time+(data.duration||5);this.rainAffectsGrowth=true;this._emit('rain','一场小雨，正在浇醒花园。'); }
-    else if(action==='keyboard-rain'||action==='keyboardRain') { this.visualRainUntil=this.time+clamp(data.duration??.6,.1,2); }
+    else if(action==='keyboard-rain'||action==='keyboardRain') { this.visualRainUntil=this.time+clamp(data.duration??.6,.1,2);this.visualRainIntensity=clamp(Number(data.intensity)||.3,.15,1); }
     else if(action==='seed') { const species=canonicalSpecies(data.speciesId??this.selectedSpecies);if(species==='waterlily'&&!Number.isFinite(data.x)&&!Number.isFinite(data.y)){x=170+this._rand()*40;y=245+this._rand()*15;}const ok=this._plant(x,y,false,species);return {ok,error:ok?undefined:'这里暂时不能播种，请在电脑上选择一片空地。'}; }
     else if(action==='food') { this._feed(x,y); }
     else if(action==='tide') { this.setTide(data.amount ?? data.value ?? (this.tide<.6?.9:.15));this._emit('tide',this.tide>.5?'潮水轻轻漫过沙滩。':'潮水退去，贝壳留在岸边。'); }
@@ -221,7 +221,7 @@ export class World {
     this.clouds.forEach((c,i)=>{if(c!==this.dragCloud){c.x+=dt*(.6+this.wind*5)*(i%2?1:-1);if(c.x<-55)c.x=695;if(c.x>695)c.x=-55;}});
     const rain=this.dragCloud||(this.time<this.rainUntil?this.rainCloud:null);
     if(rain&&this.time-this.lastRain>.025){this.lastRain=this.time;for(let i=0;i<4;i++)this.particles.push({kind:'rain',x:rain.x+(this._rand()-.5)*70*rain.w,y:rain.y+12,vy:130+this._rand()*50,vx:8+this.wind*24,life:1.9,max:1.9});}
-    if(this.time<(this.visualRainUntil||0)&&this.time-(this.lastVisualRain||0)>.06){this.lastVisualRain=this.time;for(let i=0;i<2;i++)this.particles.push({kind:'rain',x:448+(this._rand()-.5)*44,y:169+this._rand()*14,vy:65,vx:2,life:.7,max:.7});}
+    if(this.time<(this.visualRainUntil||0)&&this.time-(this.lastVisualRain||0)>.075){this.lastVisualRain=this.time;for(let i=0;i<Math.ceil(1+this.visualRainIntensity*3);i++)this.particles.push({kind:'rain',x:360+(this._rand()-.5)*225,y:115+this._rand()*55,vy:110,vx:5,life:1.15,max:1.15});}
     for(const f of this.flowers){const before=f.stage??Math.min(4,Math.floor(f.growth*5));let speed=.000025;if(rain&&this.rainAffectsGrowth&&Math.abs(f.x-rain.x)<65){f.water=Math.min(120,(f.water||0)+dt*6);speed=.008;}else if((f.water||0)>0){f.water=Math.max(0,f.water-dt);speed=.00025;}if(f.demoPlant&&this.demoMode)speed=this._demoManualStage?0:.11;f.growth=f.growthProgress=Math.min(1,(f.growthProgress??f.growth??0)+dt*speed);f.stage=Math.min(4,Math.floor(f.growthProgress*5));if(f.stage!==before){this._petals(f.x,f.y-10,5,'#f0e4a4');this._emit('growth',f.demoPlant?`演示花苗 · 第 ${f.stage+1} 阶段`:'你照顾的小苗，长出了新的模样。',{plantId:f.id,stage:f.stage,realAsset:this.art.sprites.has(`plant.${f.speciesId}.${f.stage}`)});}if(f.seeded&&this.time>f.regrow)f.seeded=false;}
     this.ripples=this.ripples.filter(r=>(r.age+=dt)<r.life);
     this.particles=this.particles.filter(p=>{
@@ -277,9 +277,10 @@ export class World {
     if(!this.desktopMode){
     const sky=g.createLinearGradient(0,0,0,205);sky.addColorStop(0,p.sky);sky.addColorStop(1,p.skyBottom);g.fillStyle=sky;g.fillRect(-this.extension,0,W+this.extension*2,H);
     // A soft, deliberately pixelated halo around the sun / moon.
-    g.globalAlpha=.09;this._ellipse(505,70,55,52,n>.5?'#e9dca4':'#fff2c4');g.globalAlpha=.16;this._ellipse(505,70,37,35,'#fff0bd');g.globalAlpha=1;
-    this._ellipse(505,70,20,20,blend('#f6df9e','#f2e7bd',n));
-    if(n>.05){g.globalAlpha=n;this._ellipse(513,63,17,18,p.sky);g.globalAlpha=1;}
+    if(!this.sunAway&&!this.parallelSunAway){const sun=this.sun||{x:505,y:70};
+    g.globalAlpha=.09;this._ellipse(sun.x,sun.y,55,52,n>.5?'#e9dca4':'#fff2c4');g.globalAlpha=.16;this._ellipse(sun.x,sun.y,37,35,'#fff0bd');g.globalAlpha=1;
+    this._ellipse(sun.x,sun.y,20,20,blend('#f6df9e','#f2e7bd',n));
+    if(n>.05){g.globalAlpha=n;this._ellipse(sun.x+8,sun.y-7,17,18,p.sky);g.globalAlpha=1;}}
     for(const s of this.stars){if(n<.02)break;g.globalAlpha=n*(.3+Math.sin(t*.6+s.phase)*.2+s.s*.3);this._rect(s.x,s.y,s.s>.7?2:1,1,'#f2e7c0');if(s.s>.9)this._rect(s.x,s.y-1,1,3,'#f2e7c0');}g.globalAlpha=1;
     // Layered distant landscape keeps the scene grounded, quiet and spacious.
     this._poly([[-this.extension,166],[32,155],[62,158],[95,145],[126,158],[150,149],[183,166],[216,162],[251,171],[284,161],[324,170],[359,156],[397,167],[430,157],[463,166],[492,153],[525,160],[552,151],[588,157],[613,145],[640+this.extension,157],[640+this.extension,221],[-this.extension,221]],blend('#a7beb0','#535c76',n));
