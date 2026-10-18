@@ -113,7 +113,9 @@ class FileRecycle {
   }
   _protected(filename) {
     const key = this._key(filename);
-    return this.protectedPaths.some(base => key === base || key.startsWith(base.endsWith(this.pathAPI.sep) ? base : base + this.pathAPI.sep))
+    // Local files only: a UNC/admin share can alias a protected local folder.
+    return (this.windows && !/^[a-z]:\\/.test(key))
+      || this.protectedPaths.some(base => key === base || key.startsWith(base.endsWith(this.pathAPI.sep) ? base : base + this.pathAPI.sep))
       || (this.windows && /(?:^|\\)\$recycle\.bin(?:\\|$)/i.test(key));
   }
   _prune() { for (const [key, batch] of this.batches) if (!batch.processing && this.now() > batch.expiresAt) this.batches.delete(key); }

@@ -67,7 +67,9 @@ test('Windows recycle policy protects system and application data regardless of 
  assert.equal(unc._protected('\\\\SERVER\\SHARE\\PRIVATE\\file.txt'),true);
  assert.equal(unc._protected('\\\\?\\UNC\\server\\share\\private\\file.txt'),true);
  assert.equal(unc._protected('\\\\?\\unc\\server\\share\\private\\file.txt'),true);
- assert.equal(unc._protected('\\\\server\\share\\private-copy\\file.txt'),false);
+ assert.equal(unc._protected('\\\\server\\share\\private-copy\\file.txt'),true);
+ assert.equal(unc._protected('\\\\localhost\\c$\\Users\\Alice\\AppData\\file.db'),true);
+ assert.equal(unc._protected('\\\\?\\GLOBALROOT\\Device\\HarddiskVolume1\\Windows\\file.txt'),true);
 });
 
 test('quit handshake waits for saved renderer acknowledgement and rejects wrong IDs', async () => {
