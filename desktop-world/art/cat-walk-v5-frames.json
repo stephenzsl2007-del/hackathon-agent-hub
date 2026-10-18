@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "sheet": "cat-walk-right-v5.png",
+  "imageSize": [
+    2172,
+    724
+  ],
+  "status": "passed_stylized_walk",
+  "eligibleForRuntimeWalk": true,
+  "facing": "right",
+  "worldScale": 0.07,
+  "measurement": {
+    "rectMethod": "Measured four isolated alpha > 10 horizontal component ranges, each expanded by 2 px padding. Not uniform-width cuts.",
+    "anchorMethod": "Ground y = alpha > 127 subject bottom edge. Root x = mean x of top 5 rows of each visible torso back ridge, excluding head and tail.",
+    "sourcePngUnmodified": true,
+    "alphaRange": [
+      0,
+      255
+    ],
+    "rightEdgeTransparentPixels": 21,
+    "bodyBackToGroundSourcePx": 266,
+    "groundSourceYAllFrames": 563,
+    "noseVerticalRangeAtSharedGroundSourcePx": 1.6,
+    "noseHorizontalRangeRelativeToBackRootSourcePx": 18.6,
+    "noseHorizontalRangeAtWorldScalePx": 1.3
+  },
+  "inspection": {
+    "label": "Four-frame stylized walk",
+    "characterConsistency": "Pass: consistent face, stripes, colors, body height, pixel density; side-view walk versus three-quarter idle is an intentional pose/view transition.",
+    "gaitConsistency": "Pass for stylized walk: near foreleg now goes forward contact, mid support, backward recovery/toe-off, lifted forward recovery. Near hindleg shows rear extension, lifted passing, forward contact, mid support. These are true limb changes, not whole-sprite translation.",
+    "limitation": "Frame 3 near front paw is slightly above the common ground line, so describe as toe-off/recovery rather than strict planted rear contact. This is a low-frame-count stylized loop, not a textbook four-contact gait.",
+    "edgeCheck": "All tails, paws, and noses are inside the measured rectangles; source fourth nose has 21 px right-side transparent clearance."
+  },
+  "frames": [
+    {
+      "index": 0,
+      "rect": [
+        28,
+        139,
+        513,
+        427
+      ],
+      "anchorPx": [
+        207,
+        424
+      ],
+      "anchorSourcePx": [
+        235,
+        563
+      ],
+      "noseSourcePx": [
+        509.4,
+        353.2
+      ],
+      "backTopSourcePx": 297,
+      "durationMs": 150,
+      "observation": "近前腿前伸接地，近后腿后伸；远腿为暗棕色。"
+    },
+    {
+      "index": 1,
+      "rect": [
+        623,
+        139,
+        449,
+        427
+      ],
+      "anchorPx": [
+        161,
+        424
+      ],
+      "anchorSourcePx": [
+        784,
+        563
+      ],
+      "noseSourcePx": [
+        1040.1,
+        353.3
+      ],
+      "backTopSourcePx": 297,
+      "durationMs": 150,
+      "observation": "近前腿垂直支撑，近后腿抬起通过身体下。"
+    },
+    {
+      "index": 2,
+      "rect": [
+        1106,
+        139,
+        519,
+        427
+      ],
+      "anchorPx": [
+        218,
+        424
+      ],
+      "anchorSourcePx": [
+        1324,
+        563
+      ],
+      "noseSourcePx": [
+        1592.7,
+        354.8
+      ],
+      "backTopSourcePx": 297,
+      "durationMs": 150,
+      "observation": "近前腿腹下后收并开始离地；远前腿深棕色前伸接地，近后腿向前落地。"
+    },
+    {
+      "index": 3,
+      "rect": [
+        1691,
+        139,
+        462,
+        427
+      ],
+      "anchorPx": [
+        171,
+        424
+      ],
+      "anchorSourcePx": [
+        1862,
+        563
+      ],
+      "noseSourcePx": [
+        2120.7,
+        354.1
+      ],
+      "backTopSourcePx": 297,
+      "durationMs": 150,
+      "observation": "近前腿前抬回收，近后腿居中支撑；远前腿暗棕色垂直。"
+    }
+  ],
+  "browserReview": {
+    "status": "passed",
+    "url": "http://127.0.0.1:4181/assets/pixel-world/animations/preview.html?manifest=candidate-manifest.json",
+    "worldScale": 0.07,
+    "frameDurationsMs": [
+      150,
+      150,
+      150,
+      150
+    ],
+    "checked": [
+      "1x/0.5x playback and all four static cards loaded correctly.",
+      "The near foreleg identity is traceable across four distinct poses.",
+      "Fourth-to-first stepping wraps correctly, with a lifted front paw returning to forward contact.",
+      "All four ground anchors share the same baseline; source size remains fixed.",
+      "The 36x29 logical-pixel world preview preserves the leg changes.",
+      "Nose/tail/paws stay inside all stage and card rectangles."
+    ],
+    "limitations": [
+      "Low-frame-count stylized walk; frame 3 near-front paw is in recovery, not a fully planted rear-contact phase.",
+      "Horizontal face motion relative to the back root is approximately 1.3 logical pixels; this is acceptable at the selected display scale."
+    ],
+    "proofPendingFormalManifest": false,
+    "formalManifestVerified": true,
+    "formalUrl": "http://127.0.0.1:4181/assets/pixel-world/animations/preview.html",
+    "screenshot": "art/cat-walk-preview.png"
+  }
+}

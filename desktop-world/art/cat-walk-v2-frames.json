@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "sheet": "cat-walk-right-v2.png",
+  "imageSize": [
+    1536,
+    1024
+  ],
+  "facing": "right",
+  "proposedWorldScale": 0.1,
+  "measurement": {
+    "rectMethod": "Measured alpha > 10 subject bounds plus 2 px padding; not uniform grid cuts.",
+    "anchorMethod": "y = bottom edge of alpha > 127 subject. x = average x of the top 5 rows of the body back ridge in a visually selected torso region, rounded. This projects a stable torso landmark to the ground rather than following a moving paw.",
+    "alphaRange": [
+      0,
+      254
+    ],
+    "sourcePngUnmodified": true
+  },
+  "frames": [
+    {
+      "index": 0,
+      "rect": [
+        142,
+        45,
+        531,
+        427
+      ],
+      "anchorPx": [
+        210,
+        424
+      ],
+      "anchorSourcePx": [
+        352,
+        469
+      ],
+      "backTopSourcePx": 203,
+      "durationMs": 150,
+      "observation": "近侧前腿直撑在肩膀下；远前腿前伸。"
+    },
+    {
+      "index": 1,
+      "rect": [
+        872,
+        45,
+        510,
+        427
+      ],
+      "anchorPx": [
+        200,
+        424
+      ],
+      "anchorSourcePx": [
+        1072,
+        469
+      ],
+      "backTopSourcePx": 203,
+      "durationMs": 150,
+      "observation": "同一近侧前腿仍直撑在肩膀下；远前腿弯曲抬起。"
+    },
+    {
+      "index": 2,
+      "rect": [
+        132,
+        541,
+        561,
+        414
+      ],
+      "anchorPx": [
+        225,
+        411
+      ],
+      "anchorSourcePx": [
+        357,
+        952
+      ],
+      "backTopSourcePx": 693,
+      "durationMs": 150,
+      "observation": "近侧前腿向后斜撑；远前腿再次前伸。"
+    },
+    {
+      "index": 3,
+      "rect": [
+        876,
+        535,
+        512,
+        419
+      ],
+      "anchorPx": [
+        196,
+        416
+      ],
+      "anchorSourcePx": [
+        1072,
+        951
+      ],
+      "backTopSourcePx": 690,
+      "durationMs": 150,
+      "observation": "近侧前腿重新直撑；抬起的是另一条前腿，近后腿落到身体下。"
+    }
+  ],
+  "status": "rejected_for_walk",
+  "eligibleForRuntimeWalk": false,
+  "inspection": {
+    "characterConsistency": "Mostly pass: face, markings, colors, pixel scale stay coherent. Back-to-ground height differs by about 3%; frame 4 compresses hindquarter silhouette but a large whole-body scale jump is not the main failure.",
+    "gaitConsistency": "Fail: the visible near foreleg remains planted in all four frames (straight in 1/2, back-angled in 3, straight in 4). The raised foreleg in frame 4 is the other foreleg. Frame 3 re-extends the far foreleg after frame 2 retracts it. Limb identity and contact/passing phases do not form a complete ordered walk.",
+    "loopDecision": "Keep as rejected candidate. Four distinct leg drawings are present, but they do not demonstrate a coherent four-phase same-limb cycle. Do not advertise this as a passed real walk animation.",
+    "previewOnly": true
+  }
+}

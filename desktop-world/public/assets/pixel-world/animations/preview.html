@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>息屿 · 动物动画检查</title>
+  <style>
+    :root { color-scheme: light; --ink: #4d392a; --muted: #89745f; --line: #ddcdb4; --paper: #fffaf0; --accent: #6d8250; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f1eadb; color: var(--ink); font: 15px/1.55 system-ui, sans-serif; }
+    main { max-width: 1120px; margin: 0 auto; padding: 28px 24px 44px; }
+    h1 { margin: 0 0 4px; font-size: 26px; }
+    p { margin: 0 0 18px; color: var(--muted); }
+    .controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+    label { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+    select, button { min-height: 38px; border: 1px solid #cbb898; border-radius: 7px; padding: 7px 12px; color: var(--ink); background: white; font: inherit; }
+    button { cursor: pointer; }
+    button:hover { background: #f4eddd; }
+    button:disabled { cursor: default; opacity: .5; }
+    button.primary { background: var(--accent); border-color: var(--accent); color: white; }
+    .check { display: flex; align-items: center; gap: 5px; min-height: 38px; font-size: 13px; }
+    .panel { margin-top: 20px; padding: 18px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
+    h2 { margin: 0 0 10px; font-size: 16px; }
+    .canvas-wrap { overflow: auto; background-color: #f2ecd9; background-image: linear-gradient(45deg,#e7dfc9 25%,transparent 25%),linear-gradient(-45deg,#e7dfc9 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e7dfc9 75%),linear-gradient(-45deg,transparent 75%,#e7dfc9 75%); background-size: 20px 20px; background-position: 0 0,0 10px,10px -10px,-10px 0; border-radius: 6px; }
+    canvas { display: block; image-rendering: pixelated; }
+    #stage { width: 100%; height: auto; }
+    #world { max-width: 100%; height: auto; }
+    .stage-meta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin-top: 10px; font: 12px/1.5 ui-monospace, monospace; color: var(--muted); }
+    .frames { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 12px; }
+    .frame { padding: 7px; border: 2px solid transparent; border-radius: 8px; background: #f0eadb; }
+    .frame.active { border-color: var(--accent); }
+    .frame canvas { width: 100%; height: auto; }
+    .frame small { display: block; margin-top: 5px; font: 11px/1.5 ui-monospace, monospace; }
+    #status { margin-top: 14px; white-space: pre-wrap; }
+    .note { font-size: 12px; margin: 10px 0 0; }
+    @media(max-width:600px) { main { padding: 18px 12px; } .controls,.panel { padding: 12px; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>团团的动作图鉴</h1>
+  <p>同一比例、同一地面锚点，检查动作细节与循环衔接。</p>
+  <div class="controls">
+    <label>动物<select id="animal" aria-label="动物"></select></label>
+    <label>动作<select id="state" aria-label="动作"></select></label>
+    <button id="play" class="primary" disabled>暂停</button>
+    <button id="previous" disabled>← 上一帧</button>
+    <button id="next" disabled>下一帧 →</button>
+    <label>播放速度<select id="speed"><option value="0.5">0.5× 慢放</option><option value="1" selected>1× 原速</option><option value="2">2×</option></select></label>
+    <label class="check"><input id="flip" type="checkbox">镜像朝向</label>
+    <label class="check"><input id="guides" type="checkbox" checked>基线与锚点</label>
+    <button id="reload">重新读取素材</button>
+  </div>
+  <p id="status" role="status">正在读取 manifest.json…</p>
+  <section class="panel">
+    <h2>放大检查</h2>
+    <div class="canvas-wrap"><canvas id="stage" width="1000" height="320"></canvas></div>
+    <div class="stage-meta"><span id="frameInfo">—</span><span id="scaleInfo">—</span></div>
+  </section>
+  <section class="panel">
+    <h2>世界实际尺寸</h2>
+    <div class="canvas-wrap"><canvas id="world" width="1000" height="110"></canvas></div>
+    <p class="note" id="worldInfo">使用清单中的 worldScale，在画布逻辑像素中显示。</p>
+  </section>
+  <section class="panel">
+    <h2>逐帧排查</h2>
+    <div id="frames" class="frames"></div>
+    <p class="note">点击任意帧可暂停定位。所有帧共享缩放比例，十字为 anchorPx，横线为世界地面。透明棋盘仅用于检查边缘。</p>
+  </section>
+</main>
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const manifestName = new URLSearchParams(location.search).get('manifest') || 'manifest.json';
+  const manifestUrl = new URL(manifestName, location.href);
+  const labels = { walk: '散步', idle: '停留', blink: '眨眼', eat: '低头进食' };
+  let manifest, character, state, frames = [], images = new Map();
+  let index = 0, playing = true, elapsed = 0, lastTime = 0, loadVersion = 0;
+  let common = { left: 0, right: 0, top: 0, bottom: 0 }, worldScale = 0.2;
+  const context = id => { const ctx = $(id).getContext('2d'); ctx.imageSmoothingEnabled = false; return ctx; };
+  const stageCtx = context('stage'), worldCtx = context('world');
+  const sheetKey = frame => frame.sheet || state.sheet || character.sheet;
+  const duration = frame => Number(frame.durationMs) > 0 ? Number(frame.durationMs) : 1000 / (Number(state.fps) || 8);
+  function getUrl(key) {
+    const value = manifest.sheets[key];
+    const file = typeof value === 'string' ? value : value && (value.file || value.url);
+    if (!file) throw new Error('找不到图集：' + key);
+    return new URL(file, manifestUrl).href;
+  }
+  async function loadImage(key) {
+    if (images.has(key)) return images.get(key);
+    const image = new Image();
+    image.src = getUrl(key);
+    await image.decode();
+    images.set(key, image);
+    return image;
+  }
+  function guide(ctx, x, y) {
+    if (!$('guides').checked) return;
+    ctx.save();
+    ctx.strokeStyle = '#7f925d'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(0, Math.round(y) + .5); ctx.lineTo(ctx.canvas.width, Math.round(y) + .5); ctx.stroke();
+    ctx.setLineDash([]); ctx.strokeStyle = '#c1694a';
+    ctx.beginPath(); ctx.moveTo(x - 5, y); ctx.lineTo(x + 5, y); ctx.moveTo(x, y - 5); ctx.lineTo(x, y + 5); ctx.stroke();
+    ctx.restore();
+  }
+  function drawFrame(ctx, frame, scale, x, y) {
+    const image = images.get(sheetKey(frame));
+    if (!image) return;
+    const [sx, sy, sw, sh] = frame.rect;
+    const [ax, ay] = frame.anchorPx;
+    ctx.save();
+    ctx.translate(Math.round(x), Math.round(y));
+    if ($('flip').checked) ctx.scale(-1, 1);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(image, sx, sy, sw, sh, -ax * scale, -ay * scale, sw * scale, sh * scale);
+    ctx.restore();
+  }
+  function fixedFit(width, height, padding) {
+    return Math.min((width - padding * 2) / Math.max(1, common.left + common.right), (height - padding * 2) / Math.max(1, common.top + common.bottom));
+  }
+  function centeredRoot(width, scale) {
+    return width / 2 + (common.left - common.right) * scale / 2 * ($('flip').checked ? -1 : 1);
+  }
+  function draw() {
+    if (!frames.length) return;
+    const frame = frames[index], scale = fixedFit(1000, 320, 28);
+    const x = centeredRoot(1000, scale), y = 320 - 28 - common.bottom * scale;
+    stageCtx.clearRect(0, 0, 1000, 320);
+    guide(stageCtx, x, y); drawFrame(stageCtx, frame, scale, x, y);
+    worldCtx.clearRect(0, 0, 1000, 110);
+    guide(worldCtx, 500, 85); drawFrame(worldCtx, frame, worldScale, 500, 85);
+    const [sx, sy, sw, sh] = frame.rect;
+    $('frameInfo').textContent = `第 ${index + 1} / ${frames.length} 帧 · ${Math.round(duration(frame))} ms · rect [${sx},${sy},${sw},${sh}] · anchor [${frame.anchorPx.join(',')}]`;
+    $('scaleInfo').textContent = `放大比例 ${scale.toFixed(3)}× · ${(state.facing || character.defaultFacing || 'right')} ${$('flip').checked ? '→ 镜像' : ''}`;
+    document.querySelectorAll('.frame').forEach((el, n) => el.classList.toggle('active', n === index));
+  }
+  function drawTiles() {
+    $('frames').replaceChildren();
+    const tileScale = fixedFit(240, 200, 14), x = centeredRoot(240, tileScale), y = 200 - 14 - common.bottom * tileScale;
+    frames.forEach((frame, n) => {
+      const button = document.createElement('button'); button.className = 'frame';
+      button.type = 'button'; button.setAttribute('aria-label', `查看第 ${n + 1} 帧`);
+      const canvas = document.createElement('canvas'); canvas.width = 240; canvas.height = 200;
+      const wrap = document.createElement('div'); wrap.className = 'canvas-wrap'; wrap.append(canvas);
+      const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = false;
+      guide(ctx, x, y); drawFrame(ctx, frame, tileScale, x, y);
+      const text = document.createElement('small'); text.textContent = `#${n + 1} · ${Math.round(duration(frame))} ms\nanchor ${frame.anchorPx.join(', ')}`; text.style.whiteSpace = 'pre-line';
+      button.append(wrap, text); button.onclick = () => { playing = false; index = n; elapsed = 0; setPlayLabel(); draw(); };
+      $('frames').append(button);
+    });
+  }
+  function setPlayLabel() { $('play').textContent = playing ? '暂停' : '播放'; }
+  async function chooseState() {
+    const version = ++loadVersion;
+    character = manifest.animals[$('animal').value];
+    state = character.states[$('state').value]; frames = [];
+    $('play').disabled = $('previous').disabled = $('next').disabled = true;
+    if (!Array.isArray(state.frames) || !state.frames.length) throw new Error('当前动作没有可用帧。');
+    const nextFrames = state.frames;
+    for (const frame of nextFrames) {
+      if (!Array.isArray(frame.rect) || frame.rect.length !== 4 || !Array.isArray(frame.anchorPx) || frame.anchorPx.length !== 2) throw new Error('帧缺少 rect 或 anchorPx。');
+    }
+    await Promise.all([...new Set(nextFrames.map(sheetKey))].map(loadImage));
+    if (version !== loadVersion) return;
+    for (const frame of nextFrames) {
+      const img = images.get(sheetKey(frame)), [x,y,w,h] = frame.rect;
+      if (![x,y,w,h,...frame.anchorPx].every(Number.isFinite) || x < 0 || y < 0 || w <= 0 || h <= 0 || x+w > img.naturalWidth || y+h > img.naturalHeight) throw new Error('帧坐标超出图集范围。');
+    }
+    frames = nextFrames;
+    common = frames.reduce((b, f) => ({ left: Math.max(b.left,f.anchorPx[0]), right: Math.max(b.right,f.rect[2]-f.anchorPx[0]), top: Math.max(b.top,f.anchorPx[1]), bottom: Math.max(b.bottom,f.rect[3]-f.anchorPx[1]) }), {left:0,right:0,top:0,bottom:0});
+    worldScale = Number(character.worldScale) > 0 ? Number(character.worldScale) : 0.2;
+    index = 0; elapsed = 0; lastTime = 0; playing = true; setPlayLabel();
+    $('play').disabled = $('previous').disabled = $('next').disabled = false;
+    $('status').textContent = `${manifestName === 'manifest.json' ? '' : '候选预览 · '}${character.name || $('animal').value} · ${labels[$('state').value] || $('state').value} · ${frames.length} 帧 · ${state.loop === false ? '播放一次' : '循环播放'}`;
+    $('worldInfo').textContent = `统一 worldScale ${worldScale} · 当前动作最大范围 ${(common.left + common.right) * worldScale | 0} × ${(common.top + common.bottom) * worldScale | 0} 逻辑像素。`;
+    drawTiles(); draw();
+  }
+  async function chooseAnimal() {
+    character = manifest.animals[$('animal').value];
+    $('state').replaceChildren(...Object.keys(character.states).map(key => new Option(labels[key] || key, key)));
+    if (character.states.walk) $('state').value = 'walk';
+    await chooseState();
+  }
+  function failure(error) { playing = false; frames = []; $('status').textContent = `素材尚未就绪：${error.message}\n请通过项目服务器打开此页，素材生成后点击“重新读取素材”。`; }
+  async function reload() {
+    try {
+      const response = await fetch(manifestUrl, {cache: 'no-store'});
+      if (!response.ok) throw new Error(`${manifestName} (${response.status})`);
+      manifest = await response.json();
+      if (!manifest.animals || !manifest.sheets) throw new Error('清单缺少 animals 或 sheets。');
+      images = new Map();
+      $('animal').replaceChildren(...Object.keys(manifest.animals).map(key => new Option(manifest.animals[key].name || key, key)));
+      if (manifest.animals.cat) $('animal').value = 'cat';
+      await chooseAnimal();
+    } catch (error) { failure(error); }
+  }
+  $('animal').onchange = () => chooseAnimal().catch(failure);
+  $('state').onchange = () => chooseState().catch(failure);
+  $('reload').onclick = reload;
+  $('play').onclick = () => { playing = !playing; if (playing && state.loop === false && index === frames.length - 1) { index = 0; elapsed = 0; } setPlayLabel(); };
+  function step(delta) { if (!frames.length) return; playing = false; index = (index + delta + frames.length) % frames.length; elapsed = 0; setPlayLabel(); draw(); }
+  $('previous').onclick = () => step(-1); $('next').onclick = () => step(1);
+  $('flip').onchange = $('guides').onchange = () => { drawTiles(); draw(); };
+  document.addEventListener('keydown', event => { if (/INPUT|SELECT/.test(event.target.tagName)) return; if (event.key === 'ArrowRight') { event.preventDefault(); step(1); } if (event.key === 'ArrowLeft') { event.preventDefault(); step(-1); } });
+  function tick(now) {
+    const dt = lastTime ? Math.min(250, now - lastTime) : 0; lastTime = now;
+    if (playing && frames.length) {
+      elapsed += dt * Number($('speed').value);
+      let changed = false;
+      while (elapsed >= duration(frames[index])) {
+        elapsed -= duration(frames[index]); changed = true;
+        if (index === frames.length - 1 && state.loop === false) { playing = false; elapsed = 0; setPlayLabel(); break; }
+        index = (index + 1) % frames.length;
+      }
+      if (changed) draw();
+    }
+    requestAnimationFrame(tick);
+  }
+  reload(); requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

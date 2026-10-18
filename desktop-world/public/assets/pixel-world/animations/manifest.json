@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "description": "Approved original orange-tabby animation: 4-frame stylized walk, 2-frame idle blink, 2-frame head-down nibble. Source PNGs unmodified.",
+  "sheets": {
+    "cat": "cat-expressions-v1.png",
+    "catWalk": "cat-walk-right-v5.png"
+  },
+  "animals": {
+    "cat": {
+      "name": "团团",
+      "sheet": "cat",
+      "defaultFacing": "right",
+      "worldScale": 0.07,
+      "states": {
+        "idle": {
+          "loop": true,
+          "frames": [
+            {
+              "rect": [
+                167,
+                74,
+                491,
+                410
+              ],
+              "anchorPx": [
+                180,
+                407
+              ],
+              "durationMs": 1800
+            },
+            {
+              "rect": [
+                890,
+                75,
+                491,
+                408
+              ],
+              "anchorPx": [
+                180,
+                406
+              ],
+              "durationMs": 140
+            }
+          ]
+        },
+        "eat": {
+          "loop": true,
+          "frames": [
+            {
+              "rect": [
+                156,
+                541,
+                562,
+                402
+              ],
+              "anchorPx": [
+                189,
+                398
+              ],
+              "durationMs": 220
+            },
+            {
+              "rect": [
+                881,
+                541,
+                562,
+                401
+              ],
+              "anchorPx": [
+                189,
+                398
+              ],
+              "durationMs": 180
+            }
+          ]
+        },
+        "walk": {
+          "sheet": "catWalk",
+          "loop": true,
+          "fps": 6.666666666666667,
+          "frames": [
+            {
+              "rect": [
+                28,
+                139,
+                513,
+                427
+              ],
+              "anchorPx": [
+                207,
+                424
+              ],
+              "durationMs": 150
+            },
+            {
+              "rect": [
+                623,
+                139,
+                449,
+                427
+              ],
+              "anchorPx": [
+                161,
+                424
+              ],
+              "durationMs": 150
+            },
+            {
+              "rect": [
+                1106,
+                139,
+                519,
+                427
+              ],
+              "anchorPx": [
+                218,
+                424
+              ],
+              "durationMs": 150
+            },
+            {
+              "rect": [
+                1691,
+                139,
+                462,
+                427
+              ],
+              "anchorPx": [
+                171,
+                424
+              ],
+              "durationMs": 150
+            }
+          ]
+        }
+      }
+    }
+  },
+  "validation": {
+    "status": "passed",
+    "acceptedStates": [
+      "idle",
+      "eat",
+      "walk"
+    ],
+    "missingStates": [
+      "rest"
+    ],
+    "inspectionFiles": [
+      "../../../../art/cat-expressions-frames.json",
+      "../../../../art/cat-walk-v5-frames.json",
+      "../../../../art/animation-qa-report.json"
+    ],
+    "notes": [
+      "Walk is a four-frame stylized cycle; frame 3 is toe-off/recovery rather than a planted rear-contact teaching pose.",
+      "Idle contains one genuine closed-eye blink frame.",
+      "Eat is a two-pose nibble loop.",
+      "All eight frames share worldScale=0.07. No individual frame is rescaled to fit its bounds.",
+      "Rejected walk-v1 through walk-v4 are not referenced.",
+      "Rest remains absent and uses the existing static fallback."
+    ]
+  },
+  "provenance": {
+    "tool": "built-in image_gen",
+    "prompts": [
+      "../../../../art/cat-expressions-prompt.txt",
+      "../../../../art/cat-walk-v3-prompt.txt",
+      "../../../../art/cat-walk-v4-prompt.txt",
+      "../../../../art/cat-walk-v5-prompt.txt"
+    ],
+    "details": "../../../../art/animation-provenance.json",
+    "sourcePixelsEditedByCode": false
+  }
+}

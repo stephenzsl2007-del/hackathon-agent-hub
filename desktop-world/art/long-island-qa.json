@@ -1,0 +1,30 @@
+{
+  "file": "island-pond-long-v1.png",
+  "originalImageSize": [
+    2098,
+    749
+  ],
+  "sourceRect": [
+    17,
+    101,
+    2065,
+    586
+  ],
+  "alphaRange": [
+    0,
+    255
+  ],
+  "visibleAspectRatio": 3.55,
+  "visiblePixelsOutsideSourceRect": 0,
+  "geometryStatus": "visual-approximation-requires-engineering-validation",
+  "mainWorkspaceSynced": true,
+  "editorHandoffSent": true,
+  "mainAppIntegration": "Confirmed by runtime-manifest.json, scene-profile.js and inspection of the main editor native app screenshot.",
+  "integrationEvidenceFiles": [
+    "public/assets/pixel-world/runtime-manifest.json",
+    "public/scene-profile.js",
+    "docs/verification/native-island-final.png",
+    "docs/verification/RESULTS.md"
+  ],
+  "integrationGeometry": "Main editor mapped the original image geometry using sourceRect [17,101,2065,586]; world rectangle is 600 x 170.26634382566587, preserving aspect ratio."
+}

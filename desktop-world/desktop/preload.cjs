@@ -19,12 +19,16 @@ contextBridge.exposeInMainWorld('desktopWorld', {
   resetBounds: () => ipcRenderer.invoke('world:reset-bounds'),
   resizeGarden: factor => ipcRenderer.invoke('world:resize', factor),
   moveGarden: delta => ipcRenderer.invoke('world:move', delta),
-  beginDrag: () => ipcRenderer.invoke('world:begin-drag'),
+  nativeDrag: process.platform === 'win32',
+  beginDrag: delta => ipcRenderer.invoke('world:begin-drag', delta),
   endDrag: () => ipcRenderer.invoke('world:end-drag'),
   setKeyboardRain: enabled => ipcRenderer.invoke('world:set-keyboard-rain', enabled === true),
   getParallel: () => ipcRenderer.invoke('world:get-parallel'),
   connectParallel: create => ipcRenderer.invoke('world:connect-parallel', create === true),
   disconnectParallel: () => ipcRenderer.invoke('world:disconnect-parallel'),
+  finishMove: () => ipcRenderer.invoke('world:finish-move'),
+  dragDebugEnabled: process.argv.includes('--xiyu-drag-debug'),
+  reportDragDebug: payload => ipcRenderer.invoke('world:drag-debug', payload),
   showContextMenu: () => ipcRenderer.invoke('world:context-menu'),
   prepareFiles: files => {
     if (!Array.isArray(files) || files.length > 30) return Promise.resolve({ ok: false, error: '一次最多选择 30 个文件。', items: [] });

@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "assets": [
+    {
+      "asset": "cat-expressions-v1.png",
+      "tool": "built-in image_gen",
+      "prompt": "art/cat-expressions-prompt.txt",
+      "sha256": "18fc80f9e6bd57c031e1ea61f638c6b14c03bff1b3861f1317fed9133aa2d2b9",
+      "sourcePixelsEditedByCode": false,
+      "runtimeApproved": true
+    },
+    {
+      "asset": "cat-walk-right-v1.png",
+      "tool": "built-in image_gen",
+      "prompt": "art/cat-walk-prompt.txt",
+      "sha256": "89fdee7909824a829d2c5aeca637510ea3dfd5b49a03d507fed7307b2ca0501e",
+      "sourcePixelsEditedByCode": false,
+      "runtimeApproved": false
+    },
+    {
+      "asset": "cat-walk-right-v2.png",
+      "tool": "built-in image_gen",
+      "prompt": "art/cat-walk-v2-prompt.txt",
+      "sha256": "1c40d688d74a5471d57cfa8c7ed6df38e56f3a6d20bd865c735591a3800b9fff",
+      "sourcePixelsEditedByCode": false,
+      "runtimeApproved": false
+    },
+    {
+      "asset": "cat-walk-right-v3.png",
+      "tool": "built-in image_gen",
+      "prompt": "art/cat-walk-v3-prompt.txt",
+      "sha256": "e21f6766035d229f6183cebcf64ff1bf1a78e7f147e79cbdb827d9a4adf4f722",
+      "sourcePixelsEditedByCode": false,
+      "runtimeApproved": false
+    },
+    {
+      "asset": "cat-walk-right-v4.png",
+      "tool": "built-in image_gen",
+      "prompt": "art/cat-walk-v4-prompt.txt",
+      "sha256": "e8823ece02057702b20b5c4866685bd015a880c1c30899fcb4804a63a40fb5b7",
+      "sourcePixelsEditedByCode": false,
+      "runtimeApproved": false
+    },
+    {
+      "asset": "cat-walk-right-v5.png",
+      "tool": "built-in image_gen",
+      "prompt": "art/cat-walk-v5-prompt.txt",
+      "sha256": "4872300de5633bcaf693cf84b1b9272a73adf0549eb48d46bb8f2bd2b794f7d7",
+      "sourcePixelsEditedByCode": false,
+      "runtimeApproved": true
+    }
+  ],
+  "approvalSource": "public/assets/pixel-world/animations/manifest.json"
+}

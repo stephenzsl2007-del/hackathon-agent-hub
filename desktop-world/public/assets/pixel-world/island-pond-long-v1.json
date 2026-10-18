@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "id": "island-pond-long-v1",
+  "runtimeSpriteId": "island.pond",
+  "artistSpriteId": "island-sakura-pond",
+  "file": "island-pond-long-v1.png",
+  "imageSize": [
+    2098,
+    749
+  ],
+  "sourceRect": [
+    17,
+    101,
+    2065,
+    586
+  ],
+  "anchorPixels": [
+    1032.5,
+    583
+  ],
+  "visibleBounds": [
+    20,
+    104,
+    2079,
+    684
+  ],
+  "visibleAspectRatio": 3.55,
+  "name": "长条樱花池塘岛",
+  "background": "RGBA transparent",
+  "tool": "built-in image_gen",
+  "geometryFile": "../../../art/long-island-geometry.json",
+  "geometryCoordinateSpace": "original full PNG pixels; subtract sourceRect x/y before mapping to rendered world rectangle",
+  "notes": [
+    "保持等比绘制，不要将树木/花草横向拉伸。",
+    "主图为横向长条，中右草坪适合独立植物/动物。",
+    "碰撞、种植、水面与旧存档迁移由主编辑按新几何重新对齐。",
+    "原islands-atlas.png保留未覆盖。"
+  ]
+}

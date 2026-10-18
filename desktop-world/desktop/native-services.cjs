@@ -207,4 +207,59 @@ class QuitHandshake {
     return { ok: true };
   }
 }
-module.exports = { AtomicStore, FileRecycle, QuitHandshake, cleanJSON };
+
+const WINDOW_LAYOUT_VERSION = 4;
+// Matches the current artist scene; older round windows migrate once below.
+const DESKTOP_SCENE_VIEWPORT = Object.freeze({ width: 640, height: 280 });
+function preferredWindowHeight(width, areaHeight) {
+  return Math.max(Math.min(440, areaHeight), Math.round(width * DESKTOP_SCENE_VIEWPORT.height / DESKTOP_SCENE_VIEWPORT.width));
+}
+function validWindowBounds(bounds) { return bounds && ['x', 'y', 'width', 'height'].every(key => Number.isFinite(bounds[key])) && bounds.width > 0 && bounds.height > 0; }
+function fitWindowBounds(bounds, area) {
+  const width = Math.round(Math.max(Math.min(560, area.width), Math.min(bounds.width, area.width)));
+  const height = Math.round(Math.max(Math.min(360, area.height), Math.min(bounds.height, area.height)));
+  return { width, height, x: Math.round(Math.max(area.x, Math.min(bounds.x, area.x + area.width - width))), y: Math.round(Math.max(area.y, Math.min(bounds.y, area.y + area.height - height))) };
+}
+function dragWindowBounds(bounds, areas) {
+  if (areas.length === 1) return fitWindowBounds(bounds, areas[0]);
+  // During a drag the window may straddle displays. Clamping to one display on
+  // every small movement traps it at that display's edge forever.
+  const left = Math.min(...areas.map(a => a.x)), top = Math.min(...areas.map(a => a.y));
+  const right = Math.max(...areas.map(a => a.x + a.width)), bottom = Math.max(...areas.map(a => a.y + a.height));
+  const candidate = fitWindowBounds(bounds, { x: left, y: top, width: right - left, height: bottom - top });
+  const overlaps = a => ({ width: Math.max(0, Math.min(candidate.x + candidate.width, a.x + a.width) - Math.max(candidate.x, a.x)), height: Math.max(0, Math.min(candidate.y + candidate.height, a.y + a.height) - Math.max(candidate.y, a.y)) });
+  if (areas.some(a => { const overlap = overlaps(a); return overlap.width >= Math.min(120, candidate.width, a.width) && overlap.height >= Math.min(80, candidate.height, a.height); })) return candidate;
+  // L-shaped/disconnected layouts have empty space inside their outer bounds.
+  // Keep a usable portion on a real display rather than allowing an invisible drop.
+  const distance = a => Math.hypot(Math.max(a.x - (candidate.x + candidate.width), candidate.x - (a.x + a.width), 0), Math.max(a.y - (candidate.y + candidate.height), candidate.y - (a.y + a.height), 0));
+  const nearest = [...areas].sort((a, b) => distance(a) - distance(b))[0];
+  return fitWindowBounds(candidate, nearest);
+}
+function defaultWindowBounds(area) {
+  const width = Math.max(Math.min(560, area.width), Math.round(area.width * .58));
+  const height = preferredWindowHeight(width, area.height);
+  return fitWindowBounds({ x: area.x + area.width - width - 16, y: area.y + area.height - height - 12, width, height }, area);
+}
+function migrateWindowLayout(saved, area) {
+  if (Number.isFinite(saved?.layoutVersion) && saved.layoutVersion >= WINDOW_LAYOUT_VERSION) return { settings: { ...saved }, changed: false, shrunk: false };
+  const settings = { ...saved, layoutVersion: WINDOW_LAYOUT_VERSION };
+  const old = saved?.bounds;
+  let shrunk = false;
+  // Legacy layouts have no record of whether size was manually adjusted. Preserve
+  // compact layouts, and shrink only windows still covering at least 65% of a display.
+  if (validWindowBounds(old) && old.width < area.width * .65 && saved.layoutVersion !== 2 && old.height > old.width * .55) {
+    // Older Windows builds displayed the round camera. Adopt the current strip
+    // height once, preserving its bottom-right anchor and user preferences.
+    const height = preferredWindowHeight(old.width, area.height);
+    settings.bounds = fitWindowBounds({ ...old, y: old.y + old.height - height, height }, area);
+  } else if (validWindowBounds(old) && old.width >= area.width * .65) {
+    const width = Math.max(Math.min(560, area.width), Math.round(old.width * .82));
+    // The former large stage gets the strip scene's height. Do not increase a
+    // deliberately shallow legacy window simply to reach the default UI height.
+    const height = Math.min(old.height, preferredWindowHeight(width, area.height));
+    settings.bounds = fitWindowBounds({ x: old.x + old.width - width, y: old.y + old.height - height, width, height }, area);
+    shrunk = settings.bounds.width < old.width || settings.bounds.height < old.height;
+  }
+  return { settings, changed: true, shrunk };
+}
+module.exports = { AtomicStore, FileRecycle, QuitHandshake, cleanJSON, WINDOW_LAYOUT_VERSION, DESKTOP_SCENE_VIEWPORT, validWindowBounds, fitWindowBounds, dragWindowBounds, defaultWindowBounds, migrateWindowLayout };

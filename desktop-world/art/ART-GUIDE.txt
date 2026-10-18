@@ -46,7 +46,7 @@ Canvas关闭imageSmoothingEnabled；CSS使用image-rendering:pixelated。
 素材为高分辨率像素风插画，实际地图内的显示尺寸与像素密度由渲染器调校。
 推荐先在640×400的逻辑画布中试用动物20–40像素高、花草16–36像素高、树木70–110像素高。
 整株绘制，当前没有拆分树冠遮挡层。行走区域/海岸碰撞请由工程维护，不能直接将图像alpha作为地图规则。
-仅静态生长状态经过整理；没有把不同物种声明为动作动画，也没有宣称实现了动物行走帧。
+基础图集为静态生长状态；没有把不同物种声明为动作动画。后续团团表情动画见下文，完整行走帧仍须单独通过步态验收。
 
 原始图与边缘说明
 图集有真实alpha透明通道。生成预览可能显示alpha为0像素下的彩色RGB底色，实际合成以alpha为准。
@@ -66,3 +66,15 @@ base-prompts.json：场景、岛屿、成熟植物和动物的生成提示词。
 growth-prompts.json：四组五阶段生长图集的生成提示词。
 shrubs-spacing-prompt.txt：灌木/湿地图集间距修正。
 trees-spacing-prompt.txt：树木图集间距修正。
+
+长条岛与动物表情补充
+长条岛：public/assets/pixel-world/island-pond-long-v1.png，实际可见长宽约3.55:1。
+裁切、等比尺寸与地形交接：island-pond-long-v1.json、art/long-island-geometry.json。
+主工作区runtime-manifest.json与scene-profile.js已使用长岛；原生应用效果见docs/verification/native-island-final.png。
+团团动画正式入口：public/assets/pixel-world/animations/manifest.json。
+当前通过的动作：idle（含真实闭眼帧）与eat（低头轻咬）各2帧，walk为4帧风格化行走；8帧共用worldScale=0.07。
+walk采用v5，近前腿前伸、居中支撑、后收、抬前，第三帧为开始离地的恢复相；前四版候选不进入运行清单。
+candidate-manifest.json只供检查，不能作为运行回退。正式接入以manifest.json为准；rest缺失时保留原静态素材。
+预览：public/assets/pixel-world/animations/preview.html；验收报告art/animation-qa-report.json。
+交接进度与动作限制以art/ANIMATION-HANDOFF.txt为准。
+补充素材均使用内置image_gen生成；PNG未使用程序修改像素。long-island-prompt.txt、cat-expressions-prompt.txt与cat-walk*-prompt.txt保存完整提示词。

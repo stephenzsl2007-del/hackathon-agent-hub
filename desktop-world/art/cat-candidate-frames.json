@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "sheet": "cat-walk-right-v1.png",
+  "imageSize": [
+    1536,
+    1024
+  ],
+  "status": "rejected_for_walk",
+  "eligibleForRuntimeWalk": false,
+  "facing": "right",
+  "proposedWorldScale": 0.1,
+  "inspection": {
+    "method": "Independent view_image review plus read-only RGBA measurement; PNG bytes unchanged.",
+    "alphaRange": [
+      0,
+      254
+    ],
+    "rectMethod": "Each visually isolated sprite: alpha > 10 bounds plus 2 px padding. Grid regions only isolate candidates; output rectangles are measured, not 512x512 cuts.",
+    "anchorMethod": "Ground y = bottom edge of alpha > 127 silhouette. Stable horizontal origin = measured pink nose centroid x minus 180 source pixels. Anchor is relative to rect. Horizontal origin is an estimated body pivot, not a leg centroid.",
+    "background": "RGBA has real transparency. Very faint residual alpha extends outside subject, hence thresholded bounds. Subject is near-opaque (max alpha 254).",
+    "characterConsistency": "Pass: same warm-orange tabby, cream muzzle/chest/paw tips, brown stripes, pink nose, upright striped tail; source-scale silhouette heights vary about 4%.",
+    "gaitConsistency": "Fail: frames 1, 3, 6 repeat a very similar near-foreleg support phase. The original order retracts, extends, then retracts the far foreleg without a full corresponding near-foreleg contact/passing cycle. Several real poses exist, but a complete coherent six-frame gait is absent.",
+    "loopDecision": "Do not solve by repeating/reordering until labeled as a full walk. Await regenerated four-phase gait. No runtime sequence approved."
+  },
+  "frames": [
+    {
+      "index": 0,
+      "sourceRow": 0,
+      "sourceColumn": 0,
+      "rect": [
+        65,
+        124,
+        438,
+        351
+      ],
+      "anchorPx": [
+        200,
+        348
+      ],
+      "anchorSourcePx": [
+        265,
+        472
+      ],
+      "noseSourcePx": [
+        444.6,
+        282.3
+      ],
+      "durationMs": 120,
+      "phaseObservation": "近侧前脚在肩下支撑；远侧前脚向前抬伸。"
+    },
+    {
+      "index": 1,
+      "sourceRow": 0,
+      "sourceColumn": 1,
+      "rect": [
+        573,
+        114,
+        420,
+        356
+      ],
+      "anchorPx": [
+        192,
+        354
+      ],
+      "anchorSourcePx": [
+        765,
+        468
+      ],
+      "noseSourcePx": [
+        944.9,
+        281.9
+      ],
+      "durationMs": 120,
+      "phaseObservation": "近侧前脚几乎保持肩下；远侧前脚回收到身体前下方；后脚抬起。"
+    },
+    {
+      "index": 2,
+      "sourceRow": 0,
+      "sourceColumn": 2,
+      "rect": [
+        1063,
+        120,
+        422,
+        356
+      ],
+      "anchorPx": [
+        193,
+        352
+      ],
+      "anchorSourcePx": [
+        1256,
+        472
+      ],
+      "noseSourcePx": [
+        1435.8,
+        282.9
+      ],
+      "durationMs": 120,
+      "phaseObservation": "回到近似第1帧的前脚轮廓，没有推进到相反接触相。"
+    },
+    {
+      "index": 3,
+      "sourceRow": 1,
+      "sourceColumn": 0,
+      "rect": [
+        61,
+        571,
+        434,
+        348
+      ],
+      "anchorPx": [
+        204,
+        345
+      ],
+      "anchorSourcePx": [
+        265,
+        916
+      ],
+      "noseSourcePx": [
+        445.0,
+        728.4
+      ],
+      "durationMs": 120,
+      "phaseObservation": "近侧前脚略向前/下，远侧前脚后缩；和前一帧连接存在相位跳变。"
+    },
+    {
+      "index": 4,
+      "sourceRow": 1,
+      "sourceColumn": 1,
+      "rect": [
+        567,
+        572,
+        427,
+        342
+      ],
+      "anchorPx": [
+        198,
+        340
+      ],
+      "anchorSourcePx": [
+        765,
+        912
+      ],
+      "noseSourcePx": [
+        944.6,
+        728.8
+      ],
+      "durationMs": 120,
+      "phaseObservation": "近侧前脚前抬，远侧前脚接地；这是明显不同的腿部姿态。"
+    },
+    {
+      "index": 5,
+      "sourceRow": 1,
+      "sourceColumn": 2,
+      "rect": [
+        1063,
+        565,
+        432,
+        354
+      ],
+      "anchorPx": [
+        194,
+        351
+      ],
+      "anchorSourcePx": [
+        1257,
+        916
+      ],
+      "noseSourcePx": [
+        1437.3,
+        727.7
+      ],
+      "durationMs": 120,
+      "phaseObservation": "又接近第1/3帧的前脚姿势，后脚抬起；不足以补成对称的完整行走周期。"
+    }
+  ]
+}

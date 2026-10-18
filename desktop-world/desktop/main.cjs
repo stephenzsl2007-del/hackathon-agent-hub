@@ -3,18 +3,38 @@ const { app, BrowserWindow, Menu, ipcMain, globalShortcut, screen, session, Tray
 const { execFile } = require('node:child_process');
 const path = require('node:path');
 const os = require('node:os');
+const fs = require('node:fs');
 const { createWorldServer } = require('../server.cjs');
-const { AtomicStore, FileRecycle, QuitHandshake } = require('./native-services.cjs');
+const { AtomicStore, FileRecycle, QuitHandshake, WINDOW_LAYOUT_VERSION, validWindowBounds, fitWindowBounds, dragWindowBounds, defaultWindowBounds, migrateWindowLayout } = require('./native-services.cjs');
 const { KeyboardActivity } = require('./keyboard-activity.cjs');
 const { ParallelFolder, createPlayFolder } = require('./parallel-folder.cjs');
 let win, world, tray, baseURL, windowStore, gardenStore, demoStore, recycler;
-let mode = true, feeding = false, moving = false, partialIgnore = false, shuttingDown = false;
+let mode = true, feeding = false, moving = false, islandDragging = false, partialIgnore = false, shuttingDown = false;
 let windowSaveTimer, displayTimer, quitting;
 let keyboardActivity, nativeDrag, parallelFolder, dragSize;
 const keyboardBlocks = new Set();
 const quitHandshake = new QuitHandshake({ timeout: 3000 });
-let settings = { alwaysOnTop: true, mouseMode: 'interactive', bounds: null, keyboardRainEnabled: false };
+let settings = { alwaysOnTop: true, mouseMode: 'interactive', bounds: null, layoutVersion: WINDOW_LAYOUT_VERSION, keyboardRainEnabled: false };
 const shortcutState = {};
+let dragDebugEnabled = process.argv.includes('--xiyu-drag-debug'), dragDebugPath, dragDebugTimer;
+const dragDebugEvents = [];
+function traceDrag(event, data = {}) {
+  if (!dragDebugEnabled || !dragDebugPath) return;
+  dragDebugEvents.push({ at: Date.now(), event, ...data });
+  if (dragDebugEvents.length > 500) dragDebugEvents.splice(0, dragDebugEvents.length - 500);
+  clearTimeout(dragDebugTimer);
+  dragDebugTimer = setTimeout(() => { fs.promises.writeFile(dragDebugPath, JSON.stringify(dragDebugEvents, null, 2), { mode: 0o600 }).catch(() => {}); }, 100);
+}
+function rendererDragTrace(payload) {
+  if (!dragDebugEnabled || !payload || typeof payload !== 'object') return;
+  const event = ['down','rejected','capture','move','up','cancel','blur','lostpointercapture','pointercancel','native-call','native-finish'].includes(payload.event) ? payload.event : 'unknown';
+  const data = {};
+  for (const key of ['screenX','screenY','clientX','clientY','pointerId','buttons','button','dx','dy']) if (Number.isFinite(payload[key])) data[key] = payload[key];
+  for (const key of ['desktopMode','hasOpenDialog','moveMode','altKey','ctrlKey','metaKey','hit','weather','captured','active']) if (typeof payload[key] === 'boolean') data[key] = payload[key];
+  const values = { phase:['pending','dragging','settling','idle'], tool:['explore','wind','rain','seed','food','tide'], target:['canvas','handle','other'], reason:['no-bridge','target','state','tool','miss','weather','no-tap','invalid-position','forwarded-move','uncaptured-hover','new-down','explicit','escape','hidden','lostpointercapture','pointercancel','blur','error'] };
+  for (const [key, allowed] of Object.entries(values)) if (allowed.includes(payload[key])) data[key] = payload[key];
+  traceDrag(`renderer:${event}`, data);
+}
 app.setName('息屿');
 // A separate profile keeps development and automated acceptance out of daily saves.
 if (process.env.XIYU_PROFILE_DIR && path.isAbsolute(process.env.XIYU_PROFILE_DIR)) app.setPath('userData', process.env.XIYU_PROFILE_DIR);
@@ -24,23 +44,18 @@ if (!single) app.quit();
 
 function defaultBounds() {
   const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
-  const area = display.workArea;
-  const width = Math.min(area.width, Math.max(560, Math.round(area.width * .44)));
-  const height = Math.min(area.height, Math.max(360, Math.round(width * .625)));
-  return { x: area.x + area.width - width - 16, y: area.y + area.height - height - 12, width, height };
+  return defaultWindowBounds(display.workArea);
 }
 function clampBounds(bounds) {
-  const valid = bounds && ['x', 'y', 'width', 'height'].every(key => Number.isFinite(bounds[key]));
-  if (!valid) return defaultBounds();
+  if (!validWindowBounds(bounds)) return defaultBounds();
   const displays = screen.getAllDisplays();
   const intersects = displays.some(({ workArea: a }) => bounds.x + bounds.width > a.x + 60 && bounds.y + bounds.height > a.y + 60 && bounds.x < a.x + a.width - 60 && bounds.y < a.y + a.height - 60);
   const area = (intersects ? screen.getDisplayMatching(bounds) : screen.getPrimaryDisplay()).workArea;
-  const width = Math.round(Math.max(Math.min(560, area.width), Math.min(bounds.width, area.width)));
-  const height = Math.round(Math.max(Math.min(360, area.height), Math.min(bounds.height, area.height)));
-  return { width, height, x: Math.round(Math.max(area.x, Math.min(bounds.x, area.x + area.width - width))), y: Math.round(Math.max(area.y, Math.min(bounds.y, area.y + area.height - height))) };
+  return fitWindowBounds(bounds, area);
 }
 function desktopState() {
-  return { platform: process.platform, desktopMode: mode, visible: Boolean(win?.isVisible()), alwaysOnTop: settings.alwaysOnTop, mouseMode: settings.mouseMode, feeding, moving, bounds: win?.getBounds() || settings.bounds, shortcuts: shortcutState, keyboardRain: keyboardActivity?.state() };
+  const liveWindow = win && !win.isDestroyed();
+  return { platform: process.platform, desktopMode: mode, visible: Boolean(liveWindow && win.isVisible()), alwaysOnTop: settings.alwaysOnTop, mouseMode: settings.mouseMode, feeding, moving, bounds: liveWindow ? win.getBounds() : settings.bounds, shortcuts: shortcutState, keyboardRain: keyboardActivity?.state() };
 }
 function sendState() { if (win && !win.isDestroyed()) win.webContents.send('world:desktop-state', desktopState()); updateTray(); }
 function command(type, details = {}) {
@@ -50,6 +65,14 @@ function command(type, details = {}) {
 function blockKeyboard(reason, blocked) {
   if (blocked) keyboardBlocks.add(reason); else keyboardBlocks.delete(reason);
   if (keyboardBlocks.size) keyboardActivity?.suspend(); else keyboardActivity?.resume();
+}
+async function setKeyboardRain(enabled) {
+  const state = await keyboardActivity.setEnabled(enabled === true);
+  // Enabling while hidden/locked is intentionally deferred by the helper. Save
+  // the preference now, even though no helper-ready callback occurs yet.
+  settings.keyboardRainEnabled = state.enabled;
+  persistWindow(); sendState();
+  return state;
 }
 function persistWindow() {
   clearTimeout(windowSaveTimer);
@@ -61,12 +84,17 @@ function persistWindow() {
 }
 function applyMouseMode() {
   if (!win || win.isDestroyed()) return;
-  const ignore = mode && !feeding && !moving && (settings.mouseMode === 'passthrough' || partialIgnore);
+  // Windows forward:true hover events can trail DOM/layout updates and leave a
+  // transparent window ignoring clicks over its own controls. Keep its default
+  // mode interactive; full passthrough remains an explicit, recoverable choice.
+  const autoIgnore = process.platform !== 'win32' && partialIgnore;
+  const ignore = mode && !feeding && !moving && !islandDragging && (settings.mouseMode === 'passthrough' || autoIgnore);
   win.setIgnoreMouseEvents(Boolean(ignore), { forward: true });
   return Boolean(ignore);
 }
 function applyTopmost() { if (win && !win.isDestroyed()) win.setAlwaysOnTop(Boolean(settings.alwaysOnTop || feeding || moving), 'floating'); }
 function setFeedingMode(enabled) {
+  finishMove();
   feeding = Boolean(enabled); partialIgnore = false; moving = false;
   applyTopmost();
   if (feeding) win.showInactive();
@@ -85,21 +113,22 @@ function setDesktopMode(_enabled) {
   return true;
 }
 function setVisible(enabled) {
-  if (!enabled) endNativeDrag();
-  if (enabled) win.showInactive(); else { win.hide(); commandHidden(); }
+  if (enabled) win.showInactive(); else { finishMove(); win.hide(); commandHidden(); }
   blockKeyboard('hidden', !enabled);
   sendState(); return desktopState();
 }
 function commandHidden() { win.webContents.send('world:command', { type: 'visibility', visible: false }); }
 function setMouseMode(value) {
   if (!['interactive', 'passthrough'].includes(value)) return desktopState();
+  finishMove();
   settings.mouseMode = value; partialIgnore = false; feeding = false; moving = false;
   applyTopmost(); applyMouseMode(); persistWindow(); sendState(); return desktopState();
 }
 function setAlwaysOnTop(enabled) { settings.alwaysOnTop = Boolean(enabled); applyTopmost(); persistWindow(); sendState(); return desktopState(); }
-function resetBounds() { settings.bounds = defaultBounds(); win.setBounds(settings.bounds); persistWindow(); sendState(); return desktopState(); }
+function resetBounds() { finishMove(); dragSize = null; settings.bounds = defaultBounds(); win.setBounds(settings.bounds); persistWindow(); sendState(); return desktopState(); }
 function resizeGarden(factor) {
   if (!Number.isFinite(factor) || factor < .5 || factor > 2) return desktopState();
+  finishMove(); dragSize = null;
   const b = win.getBounds();
   const width = Math.round(b.width * factor), height = Math.round(b.height * factor);
   win.setBounds(clampBounds({ width, height, x: b.x + b.width - width, y: b.y + b.height - height }));
@@ -108,31 +137,60 @@ function resizeGarden(factor) {
 function moveGarden(delta) {
   const dx = Number(delta?.dx), dy = Number(delta?.dy);
   if (!Number.isFinite(dx) || !Number.isFinite(dy) || Math.abs(dx) > 1000 || Math.abs(dy) > 1000) return desktopState();
-  const b = win.getBounds(); win.setBounds(clampBounds({ ...b, x: b.x + dx, y: b.y + dy }));
+  const b = win.getBounds(), requested = { ...stableDragBounds(b), x: b.x + dx, y: b.y + dy };
+  if (delta.dragging === true) {
+    islandDragging = true; applyMouseMode();
+    win.setBounds(dragWindowBounds(requested, screen.getAllDisplays().map(display => display.workArea)));
+  } else win.setBounds(clampBounds(requested));
+  traceDrag('native:move', { dx, dy, dragging: delta.dragging === true, before: b, after: win.getBounds() });
   persistWindow(); sendState(); return desktopState();
 }
-function endNativeDrag() {
-  if (!nativeDrag) return true;
-  clearInterval(nativeDrag.timer);nativeDrag = null;persistWindow();return true;
+function stopNativeDrag() {
+  if (!nativeDrag) return;
+  clearInterval(nativeDrag.timer); nativeDrag = null;
 }
-function beginNativeDrag() {
-  endNativeDrag();partialIgnore = false;applyMouseMode();
-  const origin = screen.getCursorScreenPoint(),bounds = win.getBounds(),started = Date.now();
+function stableDragBounds(bounds) {
   // Fractional Windows DPI can round getBounds outward. Keep one size across
   // moves instead of feeding each rounded native rectangle into the next move.
-  if (!dragSize || Math.abs(dragSize.width-bounds.width)>3 || Math.abs(dragSize.height-bounds.height)>3) dragSize={width:bounds.width,height:bounds.height};
-  Object.assign(bounds,dragSize);
-  nativeDrag = { x:bounds.x,y:bounds.y,timer: setInterval(() => {
-    if (!win || win.isDestroyed() || Date.now()-started>30000) { endNativeDrag();return; }
-    const cursor = screen.getCursorScreenPoint();
-    const next = clampBounds({ ...bounds, x: bounds.x+cursor.x-origin.x, y: bounds.y+cursor.y-origin.y });
-    if(next.x===nativeDrag.x&&next.y===nativeDrag.y)return;
-    nativeDrag.x=next.x;nativeDrag.y=next.y;win.setBounds(next,false);
-  },16) };
-  return true;
+  if (!dragSize || Math.abs(dragSize.width - bounds.width) > 3 || Math.abs(dragSize.height - bounds.height) > 3) dragSize = { width: bounds.width, height: bounds.height };
+  return { ...bounds, ...dragSize };
 }
-function setMoving(enabled) { moving = Boolean(enabled); feeding = false; partialIgnore = false; applyTopmost(); if (moving) win.showInactive(); applyMouseMode(); sendState(); command('move', { active: moving }); }
+function beginNativeDrag(delta = {}) {
+  const dx = Number(delta?.dx ?? 0), dy = Number(delta?.dy ?? 0);
+  if (!Number.isFinite(dx) || !Number.isFinite(dy) || Math.abs(dx) > 1000 || Math.abs(dy) > 1000 || !win || win.isDestroyed()) return desktopState();
+  stopNativeDrag(); islandDragging = true; partialIgnore = false; applyMouseMode();
+  const cursor = screen.getCursorScreenPoint();
+  const origin = { x: cursor.x - dx, y: cursor.y - dy }, bounds = stableDragBounds(win.getBounds()), started = Date.now();
+  const update = (final = false) => {
+    if (!nativeDrag) return;
+    if (!win || win.isDestroyed() || (!final && Date.now() - started > 30000)) { finishMove(); return; }
+    const cursor = screen.getCursorScreenPoint();
+    const next = dragWindowBounds({ ...bounds, x: bounds.x + cursor.x - origin.x, y: bounds.y + cursor.y - origin.y }, screen.getAllDisplays().map(display => display.workArea));
+    if (next.x === nativeDrag.x && next.y === nativeDrag.y) return;
+    nativeDrag.x = next.x; nativeDrag.y = next.y; win.setBounds(next, false);
+  };
+  nativeDrag = { x: bounds.x, y: bounds.y, update, timer: setInterval(update, 16) };
+  update(); traceDrag('native:begin', { dx, dy, before: bounds });
+  return desktopState();
+}
+function endNativeDrag() { return finishMove(); }
+function finishMove() {
+  // Pointerup may arrive between polling frames; include that last displacement.
+  if (nativeDrag && win && !win.isDestroyed()) nativeDrag.update(true);
+  stopNativeDrag();
+  if (!islandDragging || !win || win.isDestroyed()) { islandDragging = false; return desktopState(); }
+  islandDragging = false;
+  const area = screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).workArea;
+  win.setMinimumSize(Math.min(560, area.width), Math.min(360, area.height));
+  const next = fitWindowBounds(stableDragBounds(win.getBounds()), area);
+  dragSize = { width: next.width, height: next.height };
+  win.setBounds(next, false);
+  traceDrag('native:finish', { after: win.getBounds() });
+  applyMouseMode(); persistWindow(); sendState(); return desktopState();
+}
+function setMoving(enabled) { finishMove(); moving = Boolean(enabled); feeding = false; partialIgnore = false; applyTopmost(); if (moving) win.showInactive(); applyMouseMode(); sendState(); command('move', { active: moving }); }
 function recover() {
+  finishMove();
   settings.mouseMode = 'interactive'; feeding = false; moving = false; partialIgnore = false;
   win.show(); win.focus();
   win.setBounds(clampBounds(win.getBounds())); applyTopmost(); applyMouseMode(); persistWindow(); sendState(); command('tools');
@@ -142,7 +200,7 @@ async function connectParallel(create = false) {
     let folder;
     if (create) folder = await createPlayFolder(app.getPath('desktop'));
     else {
-      const result = await dialog.showOpenDialog(win, { title: '选择与圆岛互动的文件夹', properties: ['openDirectory'] });
+      const result = await dialog.showOpenDialog(win, { title: '选择与小岛互动的文件夹', properties: ['openDirectory'] });
       if (result.canceled || !result.filePaths[0]) return { ok: false, canceled: true };
       folder = result.filePaths[0];
     }
@@ -159,7 +217,7 @@ function menuTemplate() {
     { label: win?.isVisible() ? '隐藏花园' : '显示花园', click: () => setVisible(!win.isVisible()) },
     { label: '保持置顶', type: 'checkbox', checked: settings.alwaysOnTop, click: item => setAlwaysOnTop(item.checked) },
     { type: 'separator' },
-    { label: '交互模式（透明空白穿透）', type: 'radio', checked: settings.mouseMode === 'interactive', click: () => setMouseMode('interactive') },
+    { label: process.platform === 'win32' ? '交互模式（可点击与拖动）' : '交互模式（透明空白穿透）', type: 'radio', checked: settings.mouseMode === 'interactive', click: () => setMouseMode('interactive') },
     { label: '完全鼠标穿透', type: 'radio', checked: settings.mouseMode === 'passthrough', click: () => setMouseMode('passthrough') },
     { label: feeding ? '结束文件投喂模式' : '进入文件投喂模式', accelerator: 'CommandOrControl+Alt+Shift+F', click: () => setFeedingMode(!feeding) },
     { label: '找回花园与工具', accelerator: 'CommandOrControl+Alt+Shift+G', click: recover },
@@ -170,7 +228,7 @@ function menuTemplate() {
     { label: '开启／关闭麦克风送风', click: () => { setVisible(true); command('mic'); } },
     { label: '演示植物五阶段成长', click: () => { setVisible(true); command('demo'); } },
     { label: '专注陪伴', click: () => { recover(); command('focus'); } },
-    ...(process.platform === 'win32' ? [{ label: '后台键盘雨（只感知敲键，不读取文字）', type: 'checkbox', checked: Boolean(keyboardActivity?.enabled), enabled: !keyboardActivity?.starting, click: item => keyboardActivity?.setEnabled(item.checked) }] : []),
+    ...(process.platform === 'win32' ? [{ label: '后台键盘雨（只感知敲键，不读取文字）', type: 'checkbox', checked: Boolean(keyboardActivity?.enabled), enabled: !keyboardActivity?.starting, click: item => setKeyboardRain(item.checked) }] : []),
     { label: '邀请动物邻居', submenu: Object.entries({rabbit:'兔子',bird:'小鸟',squirrel:'松鼠',duck:'鸭子'}).map(([animalType,label]) => ({ label, click: () => command('invite-animal', { animalType }) })) },
     { label: '请太阳回来', click: () => command('sun-return') },
     { label: '看一场风雨', click: () => command('weather-preview') },
@@ -231,7 +289,7 @@ function installIPC() {
   handle('world:set-feeding-mode', setFeedingMode);
   handle('world:set-visible', setVisible);
   handle('world:set-always-on-top', setAlwaysOnTop);
-  handle('world:set-keyboard-rain', enabled => keyboardActivity.setEnabled(enabled === true));
+  handle('world:set-keyboard-rain', setKeyboardRain);
   handle('world:get-parallel', () => parallelFolder.state());
   handle('world:connect-parallel', create => connectParallel(create === true));
   handle('world:disconnect-parallel', () => parallelFolder.disconnect());
@@ -240,6 +298,8 @@ function installIPC() {
   handle('world:reset-bounds', resetBounds);
   handle('world:resize', resizeGarden);
   handle('world:move', moveGarden);
+  handle('world:finish-move', finishMove);
+  handle('world:drag-debug', rendererDragTrace);
   handle('world:context-menu', () => { Menu.buildFromTemplate(menuTemplate()).popup({ window: win }); return true; });
   handle('world:prepare-files', paths => recycler.prepare(paths));
   handle('world:confirm-trash', batchId => recycler.confirm(batchId));
@@ -252,14 +312,16 @@ function installIPC() {
 }
 async function createWindow() {
   const bounds = clampBounds(settings.bounds || defaultBounds());
+  const workArea = screen.getDisplayMatching(bounds).workArea;
   win = new BrowserWindow({
-    ...bounds, minWidth: 560, minHeight: 360, title: '息屿', frame: false, transparent: true,
+    ...bounds, minWidth: Math.min(560, workArea.width), minHeight: Math.min(360, workArea.height), title: '息屿', frame: false, transparent: true,
     backgroundColor: '#00000000', show: false, hasShadow: false, resizable: true,
-    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, backgroundThrottling: true },
+    webPreferences: { preload: path.join(__dirname, 'preload.cjs'), nodeIntegration: false, contextIsolation: true, sandbox: true, backgroundThrottling: true, additionalArguments: dragDebugEnabled ? ['--xiyu-drag-debug'] : [] },
   });
   win.setAlwaysOnTop(settings.alwaysOnTop, 'floating');
   if (process.platform === 'darwin') win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  win.webContents.on('render-process-gone', finishMove);
   win.webContents.on('will-navigate', (event, target) => { if (!target.startsWith(baseURL + '/')) event.preventDefault(); });
   win.webContents.on('before-input-event', (_event, input) => {
     if (input.type === 'keyDown' && input.key === 'Escape') {
@@ -269,10 +331,10 @@ async function createWindow() {
     }
   });
   win.on('move', persistWindow); win.on('resize', persistWindow);
-  win.on('blur', endNativeDrag);
+  win.on('blur', () => { traceDrag('native:blur'); finishMove(); });
   win.on('close', event => { if (!shuttingDown) { event.preventDefault(); app.quit(); } });
   win.on('show', () => { blockKeyboard('hidden', false); command('visibility', { visible: true }); sendState(); });
-  win.on('hide', () => { blockKeyboard('hidden', true); commandHidden(); sendState(); });
+  win.on('hide', () => { finishMove(); blockKeyboard('hidden', true); commandHidden(); sendState(); });
   win.webContents.on('render-process-gone', () => keyboardActivity?.setEnabled(false));
   win.once('ready-to-show', () => { win.showInactive(); applyMouseMode(); });
   await win.loadURL(`${baseURL}/?native=1`);
@@ -283,13 +345,24 @@ async function createWindow() {
 if (single) app.whenReady().then(async () => {
   try {
     const userData = app.getPath('userData');
+    dragDebugEnabled ||= fs.existsSync(path.join(userData, 'drag-debug.enabled'));
+    dragDebugPath = path.join(userData, 'drag-debug.json');
+    traceDrag('native:start');
     windowStore = new AtomicStore(path.join(userData, 'window-state.json'), { delay: 0, maxBytes: 10000 });
     gardenStore = new AtomicStore(path.join(userData, 'garden-state.json'));
     demoStore = new AtomicStore(path.join(userData, 'demo-state.json'));
     keyboardActivity = new KeyboardActivity({ profile: userData, onActivity: () => command('keyboard-activity'), onState: state => { settings.keyboardRainEnabled=state.enabled;persistWindow();sendState();if(state.error)command('notice',{message:state.error}); } });
     parallelFolder = new ParallelFolder({ thumbnail: async filename => (await nativeImage.createThumbnailFromPath(filename, { width: 64, height: 64 })).toDataURL(), onState: state => { command('parallel-state', { state });if(state.error)command('notice',{message:state.error});updateTray(); } });
     const loaded = await windowStore.load();
-    if (loaded.ok && loaded.state) settings = { ...settings, ...loaded.state, alwaysOnTop: loaded.state.alwaysOnTop !== false, mouseMode: loaded.state.mouseMode === 'passthrough' ? 'passthrough' : 'interactive', keyboardRainEnabled: loaded.state.keyboardRainEnabled === true };
+    if (loaded.ok && loaded.state) {
+      const display = validWindowBounds(loaded.state.bounds) ? screen.getDisplayMatching(loaded.state.bounds) : screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+      const migration = migrateWindowLayout(loaded.state, display.workArea);
+      settings = { ...settings, ...migration.settings, alwaysOnTop: loaded.state.alwaysOnTop !== false, mouseMode: loaded.state.mouseMode === 'passthrough' ? 'passthrough' : 'interactive', keyboardRainEnabled: loaded.state.keyboardRainEnabled === true };
+      if (migration.changed) {
+        const saved = await windowStore.save(settings);
+        if (!saved.ok) console.error(saved.error);
+      }
+    }
     const restoreKeyboardRain = settings.keyboardRainEnabled;
     recycler = new FileRecycle({ trashItem: filename => shell.trashItem(filename), protectedPaths: [app.getAppPath(), userData, path.dirname(process.execPath)] });
     world = createWorldServer({ port: 4178 });
@@ -311,10 +384,10 @@ if (single) app.whenReady().then(async () => {
     shortcutState.feed = globalShortcut.register('CommandOrControl+Alt+Shift+F', () => setFeedingMode(!feeding));
     await createWindow(); createTray();
     if (restoreKeyboardRain) keyboardActivity.setEnabled(true);
-    const repairDisplay = () => { clearTimeout(displayTimer); displayTimer = setTimeout(() => { if (win && !win.isDestroyed()) { win.setBounds(clampBounds(win.getBounds())); persistWindow(); sendState(); } }, 300); };
+    const repairDisplay = () => { clearTimeout(displayTimer); displayTimer = setTimeout(() => { if (win && !win.isDestroyed()) { finishMove(); dragSize = null; const bounds = clampBounds(win.getBounds()); const area = screen.getDisplayMatching(bounds).workArea; win.setMinimumSize(Math.min(560, area.width), Math.min(360, area.height)); win.setBounds(bounds); persistWindow(); sendState(); } }, 300); };
     screen.on('display-removed', repairDisplay); screen.on('display-added', repairDisplay); screen.on('display-metrics-changed', repairDisplay);
-    powerMonitor.on('suspend', () => { blockKeyboard('sleep',true);command('suspend'); gardenStore.flush(); demoStore.flush(); });
-    powerMonitor.on('lock-screen', () => { blockKeyboard('lock',true);command('suspend'); });
+    powerMonitor.on('suspend', () => { finishMove(); blockKeyboard('sleep',true);command('suspend'); gardenStore.flush(); demoStore.flush(); });
+    powerMonitor.on('lock-screen', () => { finishMove(); blockKeyboard('lock',true);command('suspend'); });
     powerMonitor.on('resume', () => { blockKeyboard('sleep',false);command('resume'); });
     powerMonitor.on('unlock-screen', () => { blockKeyboard('lock',false);command('resume'); });
   } catch (error) { console.error(error); app.quit(); }
@@ -325,6 +398,7 @@ app.on('before-quit', event => {
   if (shuttingDown) return;
   event.preventDefault();
   if (quitting) return;
+  finishMove();
   quitting = (async () => {
     while (win && !win.isDestroyed() && !win.webContents.isDestroyed()) {
       const result = await quitHandshake.request(message => win.webContents.send('world:command', message));
@@ -349,4 +423,4 @@ app.on('before-quit', event => {
     dialog.showErrorBox('暂时无法退出', error.message || '请重试保存后再退出。');
   }).finally(() => { quitting = null; });
 });
-app.on('will-quit', () => { endNativeDrag();parallelFolder?.disconnect(false);keyboardActivity?.dispose();globalShortcut.unregisterAll(); tray?.destroy(); if (world) world.close(); });
+app.on('will-quit', () => { stopNativeDrag();clearTimeout(windowSaveTimer);clearTimeout(displayTimer);clearTimeout(dragDebugTimer);parallelFolder?.disconnect(false);keyboardActivity?.dispose();globalShortcut.unregisterAll(); tray?.destroy(); if (world) world.close(); });

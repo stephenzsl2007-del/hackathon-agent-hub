@@ -3,17 +3,18 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f6efd9">
+  <meta name="theme-color" content="#6d422c">
   <title>一起照顾小岛 · 息屿</title>
   <link rel="stylesheet" href="/phone.css">
 </head>
 <body>
   <main>
-    <header><span class="brand">息屿 <span>BREATHING ISLAND</span></span><span id="status" class="status" role="status"><i></i>连接小岛中</span></header>
+    <header><span class="brand">息屿<span>共游布告栏</span></span><span id="status" class="status" role="status" aria-live="polite"><i aria-hidden="true"></i>连接小岛中</span></header>
+    <div class="board-paper">
     <section class="intro">
-      <p class="eyebrow">A LITTLE HELP FROM YOU</p>
-      <h1>把一点温柔，<br>送到小岛上。</h1>
-      <p class="subtitle">手机轻轻一碰，电脑里的世界就会回应。</p>
+      <p class="eyebrow"><span aria-hidden="true">▦</span> 手机和电脑连接同一 Wi-Fi</p>
+      <h1>把心意，送到小岛上。</h1>
+      <p class="subtitle">选一个动作，抬头看看电脑里的回应。</p>
       <svg class="landscape" viewBox="0 0 320 74" aria-hidden="true" shape-rendering="crispEdges">
         <path fill="#e4eac8" d="M0 61h17v-8h22v-7h18v8h24v8h21v-13h26v-8h22v9h29v13h20v-8h17v-7h24v10h27v-10h19v-8h19v12h15v22H0z"/>
         <path fill="#b4c8a0" d="M0 69h41v-5h29v5h70v-4h34v4h62v-6h36v6h48v5H0z"/>
@@ -35,11 +36,11 @@
       </button>
       <button data-action="rain" class="action rain" disabled>
         <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 5h13v4h6v4h3v7H3V10h4zM6 24h3v5H6zm9-2h3v5h-3zm9 2h3v5h-3z" fill="currentColor"/></svg>
-        <strong>下一场雨</strong><span>轻点 · 唤醒小小花苞</span>
+        <strong>落一场雨</strong><span>轻点 · 给花草浇一点水</span>
       </button>
       <button data-action="seed" class="action seed" disabled>
         <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 7h9v4h5v7h-5v-3H7v-4H3zm17-4h9v8h-4v4h-6v14h-3V13h4z" fill="currentColor"/></svg>
-        <strong>种一朵花</strong><span>轻点 · 留下一点颜色</span>
+        <strong>种一点花</strong><span>轻点 · 留下一株新芽</span>
       </button>
       <button data-action="food" class="action food" disabled>
         <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M19 3h4v6h6v4H19zM15 11h8v8h-4v4h-4v4h-4v3H7v-7h4v-8h4z" fill="currentColor"/></svg>
@@ -47,16 +48,17 @@
       </button>
       <button data-action="tide" class="action tide" disabled>
         <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 8h8v4h9V8h9v4h-6v4H8v-4H3zm0 12h8v4h9v-4h9v4h-6v4H8v-4H3z" fill="currentColor"/></svg>
-        <strong>唤起潮汐</strong><span>轻点 · 海水轻轻漫上来</span>
+        <strong>拨动池水</strong><span>轻点 · 池塘泛起小水波</span>
       </button>
       <button data-action="fireflies" class="action fireflies" disabled>
         <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M15 2h3v8h7v3h-7v7h-3v-7H8v-3h7zM5 22h3v3h3v3H8v3H5v-3H2v-3h3zm20-4h3v3h3v3h-3v3h-3v-3h-3v-3h3z" fill="currentColor"/></svg>
         <strong>放飞萤火</strong><span>轻点 · 点亮一小片夜色</span>
       </button>
     </section>
-    <div class="response" id="response" role="status">正在寻找与你相连的小岛…</div>
-    <footer><span id="room">同一片小岛</span><span>让日常，长出一点自然。</span></footer>
-    <p class="connection-note">手机和电脑需连接同一 Wi-Fi。若无法连接，可使用手机热点让电脑加入，再从电脑重新扫码。</p>
+    <div class="response" id="response" role="status" aria-live="polite" aria-atomic="true">正在寻找与你相连的小岛…</div>
+    <footer><span id="room">同一片小岛</span><span>一点心意，大家一起。</span></footer>
+    <p class="connection-note"><strong>连不上？</strong>保持电脑和息屿开启，检查同一 Wi-Fi；也可让电脑加入手机热点，再从电脑布告栏重新扫码。</p>
+    </div>
   </main>
   <script src="/phone.js"></script>
 </body>

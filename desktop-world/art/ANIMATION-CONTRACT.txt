@@ -1,0 +1,26 @@
+息屿动物动画接入合同（2026-10-18）
+
+请仅在 public/assets/pixel-world/animations/ 新增文件，不覆盖现有 animals-atlas.png。PNG须真透明背景；真实步态帧必须有不同腿部/身体姿态，不能复制同一帧或仅整图平移、镜像、缩放。
+
+推荐 manifest.json 格式：
+{
+  "version": 1,
+  "sheets": { "cat": "cat-motion.png" },
+  "animals": {
+    "cat": {
+      "sheet": "cat",
+      "defaultFacing": "right",
+      "worldScale": 0.25,
+      "states": {
+        "idle": { "loop": true, "frames": [{ "rect": [0,0,128,128], "anchorPx": [64,118], "durationMs": 600 }] },
+        "walk": { "loop": true, "frames": [{ "rect": [128,0,128,128], "anchorPx": [64,118], "durationMs": 120 }] }
+      }
+    }
+  }
+}
+
+数值仅示例，请用真实裁切、锚点、尺寸。每帧矩形是整张PNG的像素坐标，anchorPx是该帧裁切内的脚底坐标。脚底基准必须一致，整只猫必须完整在帧内，画布规格尽量一致。worldScale是一原图像素对应多少world像素；目标身体宽约33world像素，留白不计入身体宽。所有帧统一worldScale，不能分别按每帧可见宽度缩放。
+
+状态名优先：idle、walk、eat、rest。可先交真实4–6帧walk，其余缺失状态保留原静态素材，不能伪造完成。眨眼请作为idle中的真实闭眼帧，durationMs 80–160；常开眼可停1000–2500ms。步态walk帧约90–160ms，脚底循环不能跳高。若已有其他schema，保留并在 art/ANIMATION-HANDOFF.txt 清楚说明映射即可，主编辑会适配。
+
+manifest只会被读取解析，不会执行任何代码。渲染器同时校验裁切边界、alpha、anchor与统一缩放，坏文件降级到原美术，不影响岛屿或存档。动物id/bond/位置等业务状态与帧索引分开。

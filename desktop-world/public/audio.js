@@ -127,15 +127,19 @@ export class MicrophoneWind {
     } catch (error) {
       if (generation !== this._generation) return false;
       this._release();
+      const nativeApp = Boolean(globalThis.window?.desktopWorld);
+      const permissionMessage = nativeApp
+        ? '麦克风权限未开启。请到系统设置 → 隐私与安全性 → 麦克风，允许息屿使用；也可以按住空格送风。'
+        : '麦克风权限未开启。可在浏览器地址栏允许访问，或按住空格送风。';
       const messages = {
-        NotAllowedError: '麦克风权限未开启。可在浏览器地址栏允许访问，或按住空格送风。',
-        PermissionDeniedError: '麦克风权限未开启。可在浏览器地址栏允许访问，或按住空格送风。',
+        NotAllowedError: permissionMessage,
+        PermissionDeniedError: permissionMessage,
         NotFoundError: '没有找到麦克风。可以接入麦克风，或按住空格送风。',
         DevicesNotFoundError: '没有找到麦克风。可以接入麦克风，或按住空格送风。',
         NotReadableError: '暂时无法使用麦克风，可能被其他应用占用。按住空格也能送风。',
         AbortError: '麦克风连接中断，请再试一次。按住空格也能送风。',
-        InsecureContextError: '麦克风需要 HTTPS 或本机 localhost。当前可以使用触控送风。',
-        NotSupportedError: '这个浏览器暂不支持麦克风互动，可以使用触控或空格送风。',
+        InsecureContextError: nativeApp ? '麦克风环境暂不可用，请重新打开息屿。当前可以用「送风」工具。' : '麦克风需要 HTTPS 或本机 localhost。当前可以使用触控送风。',
+        NotSupportedError: nativeApp ? '当前环境暂不支持麦克风互动，可以用「送风」工具或按住空格。' : '这个浏览器暂不支持麦克风互动，可以使用触控或空格送风。',
       };
       this.onLevel(0);
       this.onState({ state: 'error', message: messages[error?.name] || '麦克风暂时无法开启，请重试；也可以按住空格送风。' });
@@ -171,8 +175,10 @@ export class GardenAudio {
     this._windGain = null;
     this._windFilter = null;
     this._noise = null;
-    this._notes = new Set();
+    this._notes = new Map();
     this._enabled = false;
+    this._suspended = false;
+    this._playbackTask = null;
     this._night = false;
     this._wind = 0;
     this._timer = 0;
@@ -185,6 +191,7 @@ export class GardenAudio {
   }
 
   get enabled() { return this._enabled; }
+  get suspended() { return this._suspended; }
 
   _create() {
     const AudioContext = AudioContextClass();
@@ -224,29 +231,78 @@ export class GardenAudio {
 
   async toggle() {
     if (this._disposed) return false;
-    const generation = ++this._generation;
     this._enabled = !this._enabled;
-    clearTimeout(this._timer);
     try {
-      if (this._enabled) {
-        if (!this._context && !this._create()) { this._enabled = false; return false; }
-        await this._context.resume();
-        if (generation !== this._generation || this._disposed) return this._enabled;
-        this._master.gain.setTargetAtTime(0.24, this._context.currentTime, 0.3);
-        this._schedule();
-        this.chime('hello');
-      } else if (this._context) {
-        this._master.gain.setTargetAtTime(0, this._context.currentTime, 0.08);
-        const context = this._context;
-        this._timer = setTimeout(() => {
-          if (!this._enabled && !this._disposed && context.state !== 'closed') context.suspend().catch(() => {});
-        }, 450);
-      }
+      // Construct in the user's gesture, even if the island is currently hidden.
+      if (this._enabled && !this._context && !this._create()) this._enabled = false;
     } catch {
       this._enabled = false;
-      if (this._master && this._context?.state !== 'closed') this._master.gain.value = 0;
     }
-    return this._enabled;
+    return this._syncPlayback(this._enabled && !this._suspended);
+  }
+
+  async setSuspended(value) {
+    if (this._disposed) return false;
+    const suspended = Boolean(value);
+    if (suspended === this._suspended) return this._playbackTask || this._enabled;
+    this._suspended = suspended;
+    return this._syncPlayback();
+  }
+
+  _stopNotes() {
+    for (const [oscillator, envelope] of this._notes) {
+      oscillator.onended = null;
+      try { oscillator.stop(); } catch { /* The note may have already ended. */ }
+      oscillator.disconnect();
+      envelope.disconnect();
+    }
+    this._notes.clear();
+  }
+
+  _silence() {
+    clearTimeout(this._timer);
+    this._timer = 0;
+    this._stopNotes();
+    if (this._master && this._context?.state !== 'closed') {
+      const now = this._context.currentTime;
+      this._master.gain.cancelScheduledValues(now);
+      this._master.gain.setValueAtTime(0, now);
+    }
+  }
+
+  _syncPlayback(greeting = false) {
+    const generation = ++this._generation;
+    if (!this._enabled || this._suspended) this._silence();
+    const apply = async () => {
+      if (this._disposed || generation !== this._generation) return this._enabled;
+      const context = this._context;
+      if (!context || context.state === 'closed') return this._enabled;
+      try {
+        if (this._enabled && !this._suspended) {
+          if (context.state !== 'running') await context.resume();
+          if (this._disposed || generation !== this._generation) return this._enabled;
+          this._master.gain.setTargetAtTime(0.24, context.currentTime, 0.3);
+          this._schedule();
+          if (greeting) this.chime('hello');
+        } else if (context.state !== 'suspended') {
+          // Pausing the context also pauses the looping breeze source's DSP.
+          await context.suspend();
+        }
+      } catch {
+        if (!this._disposed && generation === this._generation) {
+          // Automatic background transitions must not erase the user's preference.
+          // A failed explicit activation can still report failure to its button.
+          if (greeting) this._enabled = false;
+          this._silence();
+        }
+      }
+      return this._enabled;
+    };
+    // Keep resume/suspend operations ordered, including rapid visibility changes.
+    const task = this._playbackTask ? this._playbackTask.then(apply, apply) : apply();
+    this._playbackTask = task;
+    task.then(() => { if (this._playbackTask === task) this._playbackTask = null; });
+    return task;
   }
 
   setNight(value) {
@@ -264,7 +320,7 @@ export class GardenAudio {
 
   _tone(frequency, delay = 0, duration = 1.2, gain = 0.045, type = 'sine', endFrequency = frequency) {
     const context = this._context;
-    if (!this._enabled || !context || context.state !== 'running') return;
+    if (!this._enabled || this._suspended || this._disposed || !context || context.state !== 'running') return;
     const now = context.currentTime + delay;
     const oscillator = context.createOscillator();
     const envelope = context.createGain();
@@ -275,7 +331,7 @@ export class GardenAudio {
     envelope.gain.linearRampToValueAtTime(gain, now + Math.min(0.045, duration * 0.15));
     envelope.gain.exponentialRampToValueAtTime(0.0001, now + duration);
     oscillator.connect(envelope).connect(this._master);
-    this._notes.add(oscillator);
+    this._notes.set(oscillator, envelope);
     oscillator.onended = () => {
       oscillator.disconnect();
       envelope.disconnect();
@@ -286,7 +342,7 @@ export class GardenAudio {
   }
 
   chime(kind = 'seed') {
-    if (!this._enabled || !this._context) return;
+    if (!this._enabled || this._suspended || this._disposed || !this._context || this._context.state !== 'running') return;
     // Pointer movement may trigger many events; keep the soundscape unhurried.
     const now = this._context.currentTime;
     if (now - this._lastChime < 0.14 && this._lastChime !== 0) return;
@@ -302,9 +358,9 @@ export class GardenAudio {
 
   _schedule() {
     clearTimeout(this._timer);
-    if (!this._enabled || this._disposed) return;
+    if (!this._enabled || this._suspended || this._disposed) return;
     this._timer = setTimeout(() => {
-      if (!this._enabled || this._disposed) return;
+      if (!this._enabled || this._suspended || this._disposed) return;
       if (this._night) {
         const frequencies = [261.63, 329.63, 392, 523.25, 659.25];
         const note = frequencies[Math.floor(Math.random() * frequencies.length)];
@@ -327,12 +383,7 @@ export class GardenAudio {
     this._disposed = true;
     this._enabled = false;
     ++this._generation;
-    clearTimeout(this._timer);
-    for (const oscillator of this._notes) {
-      try { oscillator.stop(); } catch { /* A scheduled note may already have ended. */ }
-      oscillator.disconnect();
-    }
-    this._notes.clear();
+    this._silence();
     this._noise?.stop();
     this._noise?.disconnect();
     this._windFilter?.disconnect();

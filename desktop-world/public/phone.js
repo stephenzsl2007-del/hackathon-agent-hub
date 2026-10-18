@@ -61,7 +61,7 @@
   window.addEventListener('blur', stopHold);
   if (!room) {
     status.innerHTML = '<i></i>还没有加入小岛';
-    show('请在电脑中点击「一起造风」，扫描二维码加入。');
+    show('请在电脑中打开「布告栏 → 邀请朋友」，扫描二维码加入。');
     return;
   }
   const events = new EventSource(`/api/events?phone=1&room=${encodeURIComponent(room)}`);
