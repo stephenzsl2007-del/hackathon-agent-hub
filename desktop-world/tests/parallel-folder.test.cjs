@@ -59,13 +59,16 @@ test('a slower previous connection cannot replace the latest selected folder',as
 });
 
 test('a photo removed during a scan does not disconnect the remaining visitors',async t=>{
-  const root=await fs.mkdtemp(path.join(os.tmpdir(),'xiyu-folder-test-'));
+  // connect() resolves the folder before scanning. CI temp paths may contain
+  // aliases (/var on macOS, or a differently cased Windows path).
+  const root=await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(),'xiyu-folder-test-')));
   const vanished=path.join(root,'gone.png');await fs.writeFile(vanished,'fixture');
   await fs.writeFile(path.join(root,'stays.png'),'fixture');await fs.writeFile(path.join(root,'太阳.txt'),'');
-  const watcher=new ParallelFolder({thumbnail:async()=> 'fixture'});const original=fs.lstat;
-  t.mock.method(fs,'lstat',async filename=>{if(filename===vanished){const error=new Error('moved');error.code='ENOENT';throw error;}return original(filename);});
+  const watcher=new ParallelFolder({thumbnail:async()=> 'fixture'});const original=fs.lstat;let simulatedRemoval=false;
+  t.mock.method(fs,'lstat',async filename=>{if(filename===vanished){simulatedRemoval=true;const error=new Error('moved');error.code='ENOENT';throw error;}return original(filename);});
   t.after(async()=>{watcher.disconnect(false);await fs.rm(root,{recursive:true,force:true});});
   await watcher.connect(root);
+  assert.equal(simulatedRemoval,true);
   assert.equal(watcher.state().active,true);assert.equal(watcher.state().sunPresent,true);
   assert.deepEqual(watcher.state().images.map(image=>image.name),['stays']);
 });
